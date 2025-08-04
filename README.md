@@ -18,13 +18,19 @@
 
 2. **빌드 명령어**
    ```bash
-   pip install -r requirements.txt
+   chmod +x build.sh && ./build.sh
    ```
 
 3. **실행 명령어**
    ```bash
-   gunicorn main:app --bind 0.0.0.0:$PORT --worker-class uvicorn.workers.UvicornWorker
+   gunicorn main:app --bind 0.0.0.0:$PORT --worker-class uvicorn.workers.UvicornWorker --timeout 120 --workers 1 --preload
    ```
+
+### 배포 문제 해결
+
+- Rust 의존성 오류가 발생하면 `build.sh` 스크립트가 자동으로 처리합니다
+- `--no-build-isolation` 플래그로 Rust 컴파일을 방지합니다
+- `--preload` 옵션으로 메모리 사용량을 최적화합니다
 
 ## API 엔드포인트
 
