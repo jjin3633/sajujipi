@@ -9,12 +9,14 @@ async function getAnalysis() {
     const statusDiv = document.getElementById('status-message');
     const iljuSection = document.getElementById('ilju-analysis-section');
     const wealthLuckSection = document.getElementById('wealth-luck-analysis-section');
+    const loveLuckSection = document.getElementById('love-luck-analysis-section');
     const sipsungSection = document.getElementById('sipsung-analysis-section');
     const sibiunseongSection = document.getElementById('sibiunseong-analysis-section');
 
     // 1. 이전 결과 초기화
     iljuSection.innerHTML = "";
     wealthLuckSection.innerHTML = "";
+    loveLuckSection.innerHTML = "";
     sipsungSection.innerHTML = "";
     sibiunseongSection.innerHTML = "";
     statusDiv.innerHTML = ""; 
@@ -73,7 +75,31 @@ async function getAnalysis() {
             `;
         }
 
-        // 6. 시기별 십성 분석 결과 표시
+        // 6. 연애운 분석 결과 표시 (AI 일러스트 포함)
+        const loveLuckAnalysis = data.analysis_result.love_luck_analysis;
+        if (loveLuckAnalysis && !loveLuckAnalysis.error) {
+            let loveHtml = `
+                <h2>연애운 분석</h2>
+                <h3>${loveLuckAnalysis.title}</h3>
+                <p>${loveLuckAnalysis.description}</p>
+            `;
+            
+            // AI 일러스트가 있으면 표시
+            if (loveLuckAnalysis.illustration_url) {
+                loveHtml += `
+                    <div class="illustration-container">
+                        <h4>당신의 연애 스타일 일러스트</h4>
+                        <img src="data:image/png;base64,${loveLuckAnalysis.illustration_url}" 
+                             alt="연애 스타일 일러스트" 
+                             class="ai-illustration">
+                    </div>
+                `;
+            }
+            
+            loveLuckSection.innerHTML = loveHtml;
+        }
+
+        // 7. 시기별 십성 분석 결과 표시
         const sipsungAnalysis = data.analysis_result.sipsung_analysis;
         if (sipsungAnalysis && !sipsungAnalysis.error) {
             let sipsungHtml = '<h2>시기별 성향 분석 (십성)</h2>';
@@ -86,7 +112,7 @@ async function getAnalysis() {
             sipsungSection.innerHTML = sipsungHtml;
         }
         
-        // 7. 시기별 십이운성 분석 결과 표시
+        // 8. 시기별 십이운성 분석 결과 표시
         const sibiunseongAnalysis = data.analysis_result.sibiunseong_analysis;
         if (sibiunseongAnalysis && !sibiunseongAnalysis.error) {
             let sibiunseongHtml = '<h2>시기별 에너지 분석 (십이운성)</h2>';
@@ -104,6 +130,7 @@ async function getAnalysis() {
         statusDiv.innerHTML = `분석 중 오류가 발생했습니다. (오류: ${error.message})`;
         iljuSection.innerHTML = "";
         wealthLuckSection.innerHTML = "";
+        loveLuckSection.innerHTML = "";
         sipsungSection.innerHTML = "";
         sibiunseongSection.innerHTML = "";
     }

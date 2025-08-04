@@ -1,6 +1,7 @@
 import json
 import os
 import datetime
+import requests
 
 # ... (기존의 모든 상수 정의 및 데이터 파일 경로는 동일) ...
 CHEONGAN = "甲乙丙丁戊己庚辛壬癸"
@@ -83,6 +84,9 @@ def get_saju_details(year, month, day, hour, minute):
     
     # 재물운 분석 추가
     wealth_luck_analysis = analyze_wealth_luck(sipsung_result)
+    
+    # 연애운 분석 추가
+    love_luck_analysis = analyze_love_luck(sipsung_result)
 
     ilju_analysis_data = get_ilju_analysis_data(f"{day_gan}{JIJI[day_ji_idx]}")
     
@@ -94,9 +98,86 @@ def get_saju_details(year, month, day, hour, minute):
         "sipsung_raw": sipsung_result,
         "sipsung_analysis": sipsung_analysis,
         "sibiunseong_analysis": sibiunseong_analysis,
-        "wealth_luck_analysis": wealth_luck_analysis, # 결과에 추가
+        "wealth_luck_analysis": wealth_luck_analysis,
+        "love_luck_analysis": love_luck_analysis, # 결과에 추가
         "ilju_analysis": ilju_analysis_data
     }
+
+def analyze_love_luck(sipsung_result):
+    """십성 데이터를 기반으로 연애운을 분석하고 AI 일러스트를 생성합니다."""
+    sipsung_list = list(sipsung_result.values())
+    
+    # 관성 (배우자, 연인)
+    gwanseong_count = sipsung_list.count("편관") + sipsung_list.count("정관")
+    # 재성 (재물, 매력)
+    jaeseong_count = sipsung_list.count("편재") + sipsung_list.count("정재")
+    
+    # 연애 스타일 분석
+    if gwanseong_count == 0:
+        if jaeseong_count > 0:
+            love_style = "자유로운 연애 스타일"
+            description = "사주에 배우자나 연인을 나타내는 관성이 뚜렷하지 않아, 자유로운 연애를 선호하는 스타일입니다. 재물의 기운이 있어 매력적이고 독립적인 연애를 즐길 수 있습니다. 하지만 깊은 관계로 발전하기 위해서는 상대방을 이해하려는 노력이 필요합니다."
+            illustration_prompt = "A romantic illustration of a free-spirited person enjoying independent dating, with a modern city background, soft lighting, anime style"
+        else:
+            love_style = "조용한 연애 스타일"
+            description = "사주에 연애와 관련된 기운이 강하지 않아, 조용하고 안정적인 연애를 선호합니다. 깊이 있는 관계를 추구하며, 서두르지 않고 천천히 마음을 열어가는 스타일입니다. 진정한 사랑을 찾기 위해 인내심을 가지고 기다리는 것이 중요합니다."
+            illustration_prompt = "A gentle romantic illustration of a quiet, patient person waiting for true love, with peaceful nature background, soft pastel colors, anime style"
+    elif gwanseong_count > 0:
+        if jaeseong_count > 0:
+            love_style = "열정적인 연애 스타일"
+            description = "사주에 배우자(관성)와 매력(재성)을 모두 갖추고 있어, 열정적이고 활발한 연애를 즐기는 스타일입니다. 상대방을 사로잡는 매력이 뛰어나며, 깊이 있는 관계로 발전할 가능성이 높습니다. 하지만 너무 빠르게 진행하지 않도록 주의해야 합니다."
+            illustration_prompt = "A passionate romantic illustration of two people in deep love, with vibrant colors, hearts, and romantic atmosphere, anime style"
+        else:
+            love_style = "전통적인 연애 스타일"
+            description = "사주에 배우자(관성)는 있지만 매력(재성)이 부족하여, 전통적이고 안정적인 연애를 선호합니다. 진지한 관계를 추구하며, 결혼을 염두에 둔 연애를 하는 스타일입니다. 상대방에게 진심을 다해 대하는 것이 중요합니다."
+            illustration_prompt = "A traditional romantic illustration of a couple in a serious relationship, with elegant setting, warm lighting, anime style"
+    
+    # AI 일러스트 생성
+    try:
+        illustration_url = generate_ai_illustration(illustration_prompt)
+    except:
+        illustration_url = None
+    
+    return {
+        "title": love_style,
+        "description": description,
+        "illustration_url": illustration_url
+    }
+
+def generate_ai_illustration(prompt):
+    """AI 일러스트를 생성합니다."""
+    try:
+        # 여기서는 예시로 간단한 API 호출을 시뮬레이션합니다
+        # 실제로는 Stable Diffusion API나 다른 AI 이미지 생성 서비스를 사용합니다
+        response = requests.post(
+            "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image",
+            headers={
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": f"Bearer {os.getenv('STABILITY_API_KEY', '')}"
+            },
+            json={
+                "text_prompts": [
+                    {
+                        "text": prompt,
+                        "weight": 1
+                    }
+                ],
+                "cfg_scale": 7,
+                "height": 1024,
+                "width": 1024,
+                "samples": 1,
+                "steps": 30,
+            },
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            return data["artifacts"][0]["base64"]
+        else:
+            return None
+    except:
+        return None
 
 def analyze_wealth_luck(sipsung_result):
     """십성 데이터를 기반으로 기본적인 재물운을 분석합니다."""
