@@ -149,14 +149,17 @@ def analyze_career_luck(sipsung_result):
 def generate_ai_avatar(prompt):
     """AI 아바타를 생성합니다."""
     try:
-        # 여기서는 예시로 간단한 API 호출을 시뮬레이션합니다
-        # 실제로는 Stable Diffusion API나 다른 AI 이미지 생성 서비스를 사용합니다
+        # API 키가 없으면 None 반환
+        api_key = os.getenv('STABILITY_API_KEY', '')
+        if not api_key:
+            return None
+            
         response = requests.post(
             "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image",
             headers={
                 "Content-Type": "application/json",
                 "Accept": "application/json",
-                "Authorization": f"Bearer {os.getenv('STABILITY_API_KEY', '')}"
+                "Authorization": f"Bearer {api_key}"
             },
             json={
                 "text_prompts": [
@@ -171,6 +174,7 @@ def generate_ai_avatar(prompt):
                 "samples": 1,
                 "steps": 30,
             },
+            timeout=30  # 30초 타임아웃 추가
         )
         
         if response.status_code == 200:
@@ -178,7 +182,8 @@ def generate_ai_avatar(prompt):
             return data["artifacts"][0]["base64"]
         else:
             return None
-    except:
+    except Exception as e:
+        print(f"AI 아바타 생성 오류: {e}")
         return None
 
 def analyze_love_luck(sipsung_result):
@@ -225,14 +230,17 @@ def analyze_love_luck(sipsung_result):
 def generate_ai_illustration(prompt):
     """AI 일러스트를 생성합니다."""
     try:
-        # 여기서는 예시로 간단한 API 호출을 시뮬레이션합니다
-        # 실제로는 Stable Diffusion API나 다른 AI 이미지 생성 서비스를 사용합니다
+        # API 키가 없으면 None 반환
+        api_key = os.getenv('STABILITY_API_KEY', '')
+        if not api_key:
+            return None
+            
         response = requests.post(
             "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image",
             headers={
                 "Content-Type": "application/json",
                 "Accept": "application/json",
-                "Authorization": f"Bearer {os.getenv('STABILITY_API_KEY', '')}"
+                "Authorization": f"Bearer {api_key}"
             },
             json={
                 "text_prompts": [
@@ -247,6 +255,7 @@ def generate_ai_illustration(prompt):
                 "samples": 1,
                 "steps": 30,
             },
+            timeout=30  # 30초 타임아웃 추가
         )
         
         if response.status_code == 200:
@@ -254,7 +263,8 @@ def generate_ai_illustration(prompt):
             return data["artifacts"][0]["base64"]
         else:
             return None
-    except:
+    except Exception as e:
+        print(f"AI 일러스트 생성 오류: {e}")
         return None
 
 def analyze_wealth_luck(sipsung_result):
