@@ -25,7 +25,7 @@ async function getAnalysis() {
     statusDiv.innerHTML = "분석 중입니다... 잠시만 기다려주세요.";
 
     try {
-        const response = await fetch('https://sajujipi-backend.onrender.com', {
+        const response = await fetch('https://sajujipi-backend.onrender.com/analysis', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
