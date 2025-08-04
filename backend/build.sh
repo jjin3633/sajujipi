@@ -18,12 +18,12 @@ pip install --upgrade pip
 pip install --no-cache-dir --no-build-isolation --no-deps -r requirements.txt
 
 # 개별 패키지 설치 (Rust 컴파일 방지)
-pip install --no-cache-dir fastapi==0.95.2
-pip install --no-cache-dir uvicorn[standard]==0.22.0
+pip install --no-cache-dir fastapi==0.88.0
+pip install --no-cache-dir uvicorn[standard]==0.20.0
 pip install --no-cache-dir gunicorn==20.1.0
-pip install --no-cache-dir requests==2.31.0
+pip install --no-cache-dir requests==2.28.2
 pip install --no-cache-dir python-multipart==0.0.6
-pip install --no-cache-dir pydantic==1.9.2
-pip install --no-cache-dir typing-extensions==4.5.0
+pip install --no-cache-dir pydantic==1.9.1
+pip install --no-cache-dir typing-extensions==4.4.0
 
 echo "✅ 빌드 완료!" 
