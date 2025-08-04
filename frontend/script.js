@@ -1,19 +1,20 @@
 async function getAnalysis() {
-    // 입력 값 가져오기
+    // 입력 값 및 HTML 요소 가져오기
     const year = document.getElementById('year').value;
     const month = document.getElementById('month').value;
     const day = document.getElementById('day').value;
     const hour = document.getElementById('hour').value;
     const minute = document.getElementById('minute').value;
     
-    // HTML 요소 가져오기
     const statusDiv = document.getElementById('status-message');
     const iljuSection = document.getElementById('ilju-analysis-section');
     const sipsungSection = document.getElementById('sipsung-analysis-section');
+    const sibiunseongSection = document.getElementById('sibiunseong-analysis-section');
 
-    // 1. 이전 결과 및 상태 메시지 초기화
+    // 1. 이전 결과 초기화
     iljuSection.innerHTML = "";
     sipsungSection.innerHTML = "";
+    sibiunseongSection.innerHTML = "";
     statusDiv.innerHTML = ""; 
 
     if (!year || !month || !day || !hour || !minute) {
@@ -63,7 +64,7 @@ async function getAnalysis() {
         // 5. 시기별 십성 분석 결과 표시
         const sipsungAnalysis = data.analysis_result.sipsung_analysis;
         if (sipsungAnalysis && !sipsungAnalysis.error) {
-            let sipsungHtml = '<h2>시기별 성향 분석</h2>';
+            let sipsungHtml = '<h2>시기별 성향 분석 (십성)</h2>';
             for (const [period, analysis] of Object.entries(sipsungAnalysis)) {
                 sipsungHtml += `
                     <h4>${period}</h4>
@@ -72,12 +73,25 @@ async function getAnalysis() {
             }
             sipsungSection.innerHTML = sipsungHtml;
         }
+        
+        // 6. 시기별 십이운성 분석 결과 표시
+        const sibiunseongAnalysis = data.analysis_result.sibiunseong_analysis;
+        if (sibiunseongAnalysis && !sibiunseongAnalysis.error) {
+            let sibiunseongHtml = '<h2>시기별 에너지 분석 (십이운성)</h2>';
+            for (const [period, analysis] of Object.entries(sibiunseongAnalysis)) {
+                sibiunseongHtml += `
+                    <h4>${period.replace('주', '운')}</h4>
+                    <p>${analysis}</p>
+                `;
+            }
+            sibiunseongSection.innerHTML = sibiunseongHtml;
+        }
 
     } catch (error) {
         console.error('Error:', error);
-        // 오류 발생 시 상태 메시지에만 오류 표시
         statusDiv.innerHTML = `분석 중 오류가 발생했습니다. (오류: ${error.message})`;
         iljuSection.innerHTML = "";
         sipsungSection.innerHTML = "";
+        sibiunseongSection.innerHTML = "";
     }
 }
