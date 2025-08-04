@@ -3,7 +3,6 @@ import os
 import datetime
 import requests
 
-# ... (기존의 모든 상수 정의 및 데이터 파일 경로는 동일) ...
 CHEONGAN = "甲乙丙丁戊己庚辛壬癸"
 CHEONGAN_KOR = "갑을병정무기경신임계"
 JIJI = "子丑寅卯辰巳午未申酉戌亥"
@@ -34,7 +33,6 @@ SIBIUNSEONG_DATA_FILE = os.path.join(BASE_DIR, '..', 'data', 'sibiunseong_data.j
 
 
 def get_saju_details(year, month, day, hour, minute):
-    # ... (기존 사주팔자 계산 로직은 동일)
     ref_date = datetime.datetime(1899, 12, 22, 0, 0)
     target_date = datetime.datetime(year, month, day, hour, minute)
     delta_days = (target_date - ref_date).days
@@ -103,7 +101,7 @@ def get_saju_details(year, month, day, hour, minute):
         "sibiunseong_analysis": sibiunseong_analysis,
         "wealth_luck_analysis": wealth_luck_analysis,
         "love_luck_analysis": love_luck_analysis,
-        "career_luck_analysis": career_luck_analysis, # 결과에 추가
+        "career_luck_analysis": career_luck_analysis,
         "ilju_analysis": ilju_analysis_data
     }
 
@@ -292,7 +290,6 @@ def analyze_wealth_luck(sipsung_result):
             }
     return {"title": "재물운 분석", "description": "일반적인 분석입니다."}
 
-# ... (나머지 함수들은 기존과 동일)
 def calculate_sibiunseong(pillars_char):
     ilgan = pillars_char['day_gan']
     result = {}
