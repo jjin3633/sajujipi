@@ -27,7 +27,7 @@ pip install --no-cache-dir uvicorn[standard]==0.23.2
 pip install --no-cache-dir gunicorn==21.2.0
 pip install --no-cache-dir requests==2.31.0
 pip install --no-cache-dir python-multipart==0.0.6
-pip install --no-cache-dir pydantic==2.0.3
+pip install --no-cache-dir pydantic==1.10.13
 pip install --no-cache-dir typing-extensions==4.5.0
 
 # 빌드 완료 확인

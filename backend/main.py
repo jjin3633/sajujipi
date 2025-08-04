@@ -5,7 +5,7 @@ from logic.analyzer import get_saju_details
 import traceback
 import os
 
-app = FastAPI(title="사주팔자 AI 분석 API", version="1.0.0")
+app = FastAPI(title="사주피티 version="1.0.0")
 
 # CORS 설정
 app.add_middleware(
