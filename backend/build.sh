@@ -22,13 +22,13 @@ export RUSTUP_HOME=/tmp/rustup
 pip install --no-cache-dir --no-build-isolation --no-deps -r requirements.txt
 
 # 개별 패키지 설치 (Rust 의존성 제외)
-pip install --no-cache-dir fastapi==0.99.1
+pip install --no-cache-dir fastapi==0.98.0
 pip install --no-cache-dir uvicorn[standard]==0.23.2
 pip install --no-cache-dir gunicorn==21.2.0
 pip install --no-cache-dir requests==2.31.0
 pip install --no-cache-dir python-multipart==0.0.6
 pip install --no-cache-dir pydantic==1.10.13
-pip install --no-cache-dir typing-extensions==4.5.0
+pip install --no-cache-dir typing-extensions==4.8.0
 
 # 빌드 완료 확인
 echo "✅ 빌드 완료!" 

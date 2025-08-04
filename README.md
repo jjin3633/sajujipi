@@ -31,6 +31,9 @@
 - Rust 의존성 오류가 발생하면 `build.sh` 스크립트가 자동으로 처리합니다
 - `--no-build-isolation` 플래그로 Rust 컴파일을 방지합니다
 - `--preload` 옵션으로 메모리 사용량을 최적화합니다
+- `pydantic==1.10.13` 버전으로 FastAPI 호환성 보장
+- `typing-extensions==4.8.0`으로 Python 3.13 호환성 보장
+- 의존성 충돌 방지를 위한 안정적인 패키지 버전 사용
 
 ## API 엔드포인트
 
