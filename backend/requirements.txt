@@ -1,2 +1,4 @@
-fastapi
-uvicorn
+    fastapi
+    uvicorn
+    korean-lunar-calendar
+    gunicorn
