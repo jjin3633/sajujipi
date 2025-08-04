@@ -8,11 +8,13 @@ async function getAnalysis() {
     
     const statusDiv = document.getElementById('status-message');
     const iljuSection = document.getElementById('ilju-analysis-section');
+    const wealthLuckSection = document.getElementById('wealth-luck-analysis-section');
     const sipsungSection = document.getElementById('sipsung-analysis-section');
     const sibiunseongSection = document.getElementById('sibiunseong-analysis-section');
 
     // 1. 이전 결과 초기화
     iljuSection.innerHTML = "";
+    wealthLuckSection.innerHTML = "";
     sipsungSection.innerHTML = "";
     sibiunseongSection.innerHTML = "";
     statusDiv.innerHTML = ""; 
@@ -61,7 +63,17 @@ async function getAnalysis() {
             `;
         }
 
-        // 5. 시기별 십성 분석 결과 표시
+        // 5. 재물운 분석 결과 표시
+        const wealthLuckAnalysis = data.analysis_result.wealth_luck_analysis;
+        if (wealthLuckAnalysis && !wealthLuckAnalysis.error) {
+            wealthLuckSection.innerHTML = `
+                <h2>재물운 분석</h2>
+                <h3>${wealthLuckAnalysis.title}</h3>
+                <p>${wealthLuckAnalysis.description}</p>
+            `;
+        }
+
+        // 6. 시기별 십성 분석 결과 표시
         const sipsungAnalysis = data.analysis_result.sipsung_analysis;
         if (sipsungAnalysis && !sipsungAnalysis.error) {
             let sipsungHtml = '<h2>시기별 성향 분석 (십성)</h2>';
@@ -74,7 +86,7 @@ async function getAnalysis() {
             sipsungSection.innerHTML = sipsungHtml;
         }
         
-        // 6. 시기별 십이운성 분석 결과 표시
+        // 7. 시기별 십이운성 분석 결과 표시
         const sibiunseongAnalysis = data.analysis_result.sibiunseong_analysis;
         if (sibiunseongAnalysis && !sibiunseongAnalysis.error) {
             let sibiunseongHtml = '<h2>시기별 에너지 분석 (십이운성)</h2>';
@@ -91,6 +103,7 @@ async function getAnalysis() {
         console.error('Error:', error);
         statusDiv.innerHTML = `분석 중 오류가 발생했습니다. (오류: ${error.message})`;
         iljuSection.innerHTML = "";
+        wealthLuckSection.innerHTML = "";
         sipsungSection.innerHTML = "";
         sibiunseongSection.innerHTML = "";
     }
