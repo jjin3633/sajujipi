@@ -88,6 +88,9 @@ def get_saju_details(year, month, day, hour, minute):
     
     # 직업운 분석 추가
     career_luck_analysis = analyze_career_luck(sipsung_result)
+    
+    # 건강운 분석 추가
+    health_luck_analysis = analyze_health_luck(sipsung_result, pillars_char)
 
     ilju_analysis_data = get_ilju_analysis_data(f"{day_gan}{JIJI[day_ji_idx]}")
     
@@ -102,6 +105,7 @@ def get_saju_details(year, month, day, hour, minute):
         "wealth_luck_analysis": wealth_luck_analysis,
         "love_luck_analysis": love_luck_analysis,
         "career_luck_analysis": career_luck_analysis,
+        "health_luck_analysis": health_luck_analysis, # 결과에 추가
         "ilju_analysis": ilju_analysis_data
     }
 
@@ -299,6 +303,96 @@ def analyze_wealth_luck(sipsung_result):
                 "description": "재물을 만들어내는 과정보다는, 이미 만들어진 재물을 관리하거나 기회를 포착하여 부를 쌓는 데 더 유리합니다. 안정적인 직장 내에서의 재무 관리나, 부동산, 유산 상속 등의 기회가 있을 수 있습니다."
             }
     return {"title": "재물운 분석", "description": "일반적인 분석입니다."}
+
+def analyze_health_luck(sipsung_result, pillars_char):
+    """십성 데이터와 사주팔자를 기반으로 건강운을 분석합니다."""
+    sipsung_list = list(sipsung_result.values())
+    
+    # 일간의 오행
+    day_gan = pillars_char['day_gan']
+    day_oheng = OHENG_GAN[day_gan]
+    
+    # 오행별 개수 계산
+    oheng_count = {"목": 0, "화": 0, "토": 0, "금": 0, "수": 0}
+    
+    for key, char in pillars_char.items():
+        if 'gan' in key:
+            oheng = OHENG_GAN[char]
+            oheng_count[oheng] += 1
+        elif 'ji' in key:
+            oheng = OHENG_JIJI[char]
+            oheng_count[oheng] += 1
+    
+    # 건강 관련 십성 분석
+    # 식상 (소화기, 창의성) - 과다하면 소화불량, 부족하면 식욕부진
+    siksang_count = sipsung_list.count("식신") + sipsung_list.count("상관")
+    # 관성 (관절, 뼈) - 과다하면 관절염, 부족하면 골다공증
+    gwanseong_count = sipsung_list.count("편관") + sipsung_list.count("정관")
+    # 재성 (순환계, 피부) - 과다하면 혈압문제, 부족하면 빈혈
+    jaeseong_count = sipsung_list.count("편재") + sipsung_list.count("정재")
+    
+    # 건강 스타일 분석
+    if siksang_count > 2:
+        health_style = "활발한 신진대사형"
+        description = "사주에 소화와 신진대사를 나타내는 식상이 강하여, 활발한 신진대사를 가지고 있습니다. 하지만 과식이나 불규칙한 식사로 소화불량이 생길 수 있으니 주의해야 합니다. 규칙적인 식사와 적절한 운동이 중요합니다."
+        weak_points = ["소화기", "위장", "대사"]
+        strong_points = ["활력", "에너지", "회복력"]
+    elif siksang_count == 0:
+        health_style = "안정적 체질형"
+        description = "사주에 식상이 부족하여 안정적인 체질을 가지고 있습니다. 소화가 느리고 식욕이 부족할 수 있으니, 소화가 잘 되는 음식을 섭취하고 규칙적인 식사가 중요합니다. 천천히 꾸준히 관리하는 것이 좋습니다."
+        weak_points = ["소화기", "식욕", "대사"]
+        strong_points = ["안정성", "지속력", "균형감"]
+    elif gwanseong_count > 2:
+        health_style = "강한 골격형"
+        description = "사주에 관절과 뼈를 나타내는 관성이 강하여, 튼튼한 골격을 가지고 있습니다. 하지만 과도한 운동이나 무리한 활동으로 관절에 부담이 갈 수 있으니 주의해야 합니다. 적절한 스트레칭과 관절 관리가 중요합니다."
+        weak_points = ["관절", "뼈", "인대"]
+        strong_points = ["골격", "지구력", "체력"]
+    elif gwanseong_count == 0:
+        health_style = "유연한 체질형"
+        description = "사주에 관성이 부족하여 유연한 체질을 가지고 있습니다. 관절이 약하거나 골다공증이 생길 수 있으니, 칼슘 섭취와 가벼운 운동이 중요합니다. 요가나 스트레칭 같은 유연성 운동이 도움이 됩니다."
+        weak_points = ["뼈", "관절", "골격"]
+        strong_points = ["유연성", "민첩성", "회복력"]
+    elif jaeseong_count > 2:
+        health_style = "순환계 활발형"
+        description = "사주에 순환계를 나타내는 재성이 강하여, 활발한 혈액순환을 가지고 있습니다. 하지만 스트레스나 과로로 혈압이 올라갈 수 있으니 주의해야 합니다. 규칙적인 생활과 스트레스 관리가 중요합니다."
+        weak_points = ["혈압", "순환계", "피부"]
+        strong_points = ["혈액순환", "활력", "에너지"]
+    elif jaeseong_count == 0:
+        health_style = "안정적 순환형"
+        description = "사주에 재성이 부족하여 안정적인 순환계를 가지고 있습니다. 빈혈이나 혈액순환이 느릴 수 있으니, 철분 섭취와 가벼운 운동이 중요합니다. 따뜻한 음식과 규칙적인 생활이 도움이 됩니다."
+        weak_points = ["빈혈", "혈액순환", "체온"]
+        strong_points = ["안정성", "지속력", "균형감"]
+    else:
+        health_style = "균형잡힌 건강형"
+        description = "사주에 건강 관련 기운이 균형잡혀 있어, 전반적으로 건강한 체질을 가지고 있습니다. 하지만 나이에 따라 주의해야 할 부분이 있으니, 정기적인 건강검진과 예방 관리가 중요합니다."
+        weak_points = ["나이별 변화", "예방 관리"]
+        strong_points = ["균형감", "적응력", "회복력"]
+    
+    # 오행 균형 분석
+    max_oheng = max(oheng_count.values())
+    min_oheng = min(oheng_count.values())
+    oheng_balance = "균형잡힌" if max_oheng - min_oheng <= 1 else "불균형한"
+    
+    # 건강 관리 조언
+    if day_oheng == "목":
+        care_advice = "간과 담낭 건강에 주의하세요. 녹차, 녹색 채소 섭취가 도움이 됩니다."
+    elif day_oheng == "화":
+        care_advice = "심장과 소장 건강에 주의하세요. 붉은색 음식과 따뜻한 음식 섭취가 도움이 됩니다."
+    elif day_oheng == "토":
+        care_advice = "비장과 위장 건강에 주의하세요. 노란색 음식과 따뜻한 음식 섭취가 도움이 됩니다."
+    elif day_oheng == "금":
+        care_advice = "폐와 대장 건강에 주의하세요. 흰색 음식과 매운 음식 섭취가 도움이 됩니다."
+    else:  # 수
+        care_advice = "신장과 방광 건강에 주의하세요. 검은색 음식과 짭짤한 음식 섭취가 도움이 됩니다."
+    
+    return {
+        "title": health_style,
+        "description": description,
+        "weak_points": weak_points,
+        "strong_points": strong_points,
+        "oheng_balance": oheng_balance,
+        "care_advice": care_advice
+    }
 
 def calculate_sibiunseong(pillars_char):
     ilgan = pillars_char['day_gan']

@@ -11,6 +11,7 @@ async function getAnalysis() {
     const wealthLuckSection = document.getElementById('wealth-luck-analysis-section');
     const loveLuckSection = document.getElementById('love-luck-analysis-section');
     const careerLuckSection = document.getElementById('career-luck-analysis-section');
+    const healthLuckSection = document.getElementById('health-luck-analysis-section');
     const sipsungSection = document.getElementById('sipsung-analysis-section');
     const sibiunseongSection = document.getElementById('sibiunseong-analysis-section');
 
@@ -19,6 +20,7 @@ async function getAnalysis() {
     wealthLuckSection.innerHTML = "";
     loveLuckSection.innerHTML = "";
     careerLuckSection.innerHTML = "";
+    healthLuckSection.innerHTML = "";
     sipsungSection.innerHTML = "";
     sibiunseongSection.innerHTML = "";
     statusDiv.innerHTML = ""; 
@@ -125,7 +127,25 @@ async function getAnalysis() {
             careerLuckSection.innerHTML = careerHtml;
         }
 
-        // 8. 시기별 십성 분석 결과 표시
+        // 8. 건강운 분석 결과 표시
+        const healthLuckAnalysis = data.analysis_result.health_luck_analysis;
+        if (healthLuckAnalysis && !healthLuckAnalysis.error) {
+            healthLuckSection.innerHTML = `
+                <h2>건강운 분석</h2>
+                <h3>${healthLuckAnalysis.title}</h3>
+                <p>${healthLuckAnalysis.description}</p>
+                <h4>강점</h4>
+                <ul>${healthLuckAnalysis.strong_points.map(point => `<li>${point}</li>`).join('')}</ul>
+                <h4>주의점</h4>
+                <ul>${healthLuckAnalysis.weak_points.map(point => `<li>${point}</li>`).join('')}</ul>
+                <h4>오행 균형</h4>
+                <p>${healthLuckAnalysis.oheng_balance} 오행 분포를 가지고 있습니다.</p>
+                <h4>건강 관리 조언</h4>
+                <p>${healthLuckAnalysis.care_advice}</p>
+            `;
+        }
+
+        // 9. 시기별 십성 분석 결과 표시
         const sipsungAnalysis = data.analysis_result.sipsung_analysis;
         if (sipsungAnalysis && !sipsungAnalysis.error) {
             let sipsungHtml = '<h2>시기별 성향 분석 (십성)</h2>';
@@ -138,7 +158,7 @@ async function getAnalysis() {
             sipsungSection.innerHTML = sipsungHtml;
         }
         
-        // 9. 시기별 십이운성 분석 결과 표시
+        // 10. 시기별 십이운성 분석 결과 표시
         const sibiunseongAnalysis = data.analysis_result.sibiunseong_analysis;
         if (sibiunseongAnalysis && !sibiunseongAnalysis.error) {
             let sibiunseongHtml = '<h2>시기별 에너지 분석 (십이운성)</h2>';
@@ -158,6 +178,7 @@ async function getAnalysis() {
         wealthLuckSection.innerHTML = "";
         loveLuckSection.innerHTML = "";
         careerLuckSection.innerHTML = "";
+        healthLuckSection.innerHTML = "";
         sipsungSection.innerHTML = "";
         sibiunseongSection.innerHTML = "";
     }
