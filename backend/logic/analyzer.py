@@ -2,7 +2,7 @@ import json
 import os
 import datetime
 
-# ... (기존의 모든 상수 정의는 동일) ...
+# ... (기존의 모든 상수 정의 및 데이터 파일 경로는 동일) ...
 CHEONGAN = "甲乙丙丁戊己庚辛壬癸"
 CHEONGAN_KOR = "갑을병정무기경신임계"
 JIJI = "子丑寅卯辰巳午未申酉戌亥"
@@ -31,8 +31,9 @@ ILJU_DATA_FILE = os.path.join(BASE_DIR, '..', 'data', 'ilju_data.json')
 SIPSUNG_DATA_FILE = os.path.join(BASE_DIR, '..', 'data', 'sipsung_data.json')
 SIBIUNSEONG_DATA_FILE = os.path.join(BASE_DIR, '..', 'data', 'sibiunseong_data.json')
 
-# ... (get_saju_details, calculate_sibiunseong, analyze_sibiunseong, calculate_sipsung, analyze_sipsung_by_period 함수는 동일)
+
 def get_saju_details(year, month, day, hour, minute):
+    # ... (기존 사주팔자 계산 로직은 동일)
     ref_date = datetime.datetime(1899, 12, 22, 0, 0)
     target_date = datetime.datetime(year, month, day, hour, minute)
     delta_days = (target_date - ref_date).days
@@ -71,15 +72,20 @@ def get_saju_details(year, month, day, hour, minute):
     hour_gan = CHEONGAN[hour_gan_idx]
     pillars_char = {
         'year_gan': year_gan, 'year_ji': year_ji,
-        'month_gan': month_gan, 'month_ji': JIJI[day_ji_idx],
+        'month_gan': month_gan, 'month_ji': month_ji,
         'day_gan': day_gan, 'day_ji': JIJI[day_ji_idx],
         'hour_gan': hour_gan, 'hour_ji': hour_ji
     }
-    pillars_char['month_ji'] = month_ji
+    
     sipsung_result = calculate_sipsung(pillars_char)
     sipsung_analysis = analyze_sipsung_by_period(sipsung_result)
     sibiunseong_analysis = analyze_sibiunseong(pillars_char)
+    
+    # 재물운 분석 추가
+    wealth_luck_analysis = analyze_wealth_luck(sipsung_result)
+
     ilju_analysis_data = get_ilju_analysis_data(f"{day_gan}{JIJI[day_ji_idx]}")
+    
     return {
         "year_pillar": f"{year_gan}{year_ji}",
         "month_pillar": f"{month_gan}{month_ji}",
@@ -88,9 +94,44 @@ def get_saju_details(year, month, day, hour, minute):
         "sipsung_raw": sipsung_result,
         "sipsung_analysis": sipsung_analysis,
         "sibiunseong_analysis": sibiunseong_analysis,
+        "wealth_luck_analysis": wealth_luck_analysis, # 결과에 추가
         "ilju_analysis": ilju_analysis_data
     }
 
+def analyze_wealth_luck(sipsung_result):
+    """십성 데이터를 기반으로 기본적인 재물운을 분석합니다."""
+    sipsung_list = list(sipsung_result.values())
+    
+    # 재성 (재물의 별)
+    jaeseong_count = sipsung_list.count("편재") + sipsung_list.count("정재")
+    # 식상 (재물을 만들어내는 힘)
+    siksang_count = sipsung_list.count("식신") + sipsung_list.count("상관")
+    
+    if jaeseong_count == 0:
+        if siksang_count > 0:
+            return {
+                "title": "노력으로 부를 이루는 유형",
+                "description": "사주에 직접적인 재물(재성)은 뚜렷하지 않지만, 재물을 만들어내는 힘(식상)이 있습니다. 당신의 창의적인 아이디어나 꾸준한 노력이 곧 재물로 이어질 수 있습니다. 과정에 집중하면 결과는 자연히 따라올 것입니다."
+            }
+        else:
+            return {
+                "title": "안정을 추구하는 대기만성형",
+                "description": "사주에 재물과 관련된 기운이 강하지 않아, 큰 재물을 추구하기보다는 안정적인 수입을 통해 삶의 기반을 다지는 것이 중요합니다. 투기적인 활동보다는 성실함을 무기로 삼아야 합니다."
+            }
+    elif jaeseong_count > 0:
+        if siksang_count > 0:
+            return {
+                "title": "타고난 사업가 유형 (식상생재)",
+                "description": "재물을 만들어내는 힘(식상)과 재물 그 자체(재성)를 모두 갖추고 있어, 사업적인 수완이 매우 뛰어납니다. 당신의 아이디어가 곧 돈이 되는 '식상생재'의 구조를 가지고 있어 큰 부를 이룰 잠재력이 높습니다."
+            }
+        else:
+            return {
+                "title": "관리와 기회의 재물 유형",
+                "description": "재물을 만들어내는 과정보다는, 이미 만들어진 재물을 관리하거나 기회를 포착하여 부를 쌓는 데 더 유리합니다. 안정적인 직장 내에서의 재무 관리나, 부동산, 유산 상속 등의 기회가 있을 수 있습니다."
+            }
+    return {"title": "재물운 분석", "description": "일반적인 분석입니다."}
+
+# ... (나머지 함수들은 기존과 동일)
 def calculate_sibiunseong(pillars_char):
     ilgan = pillars_char['day_gan']
     result = {}
@@ -147,23 +188,16 @@ def analyze_sipsung_by_period(sipsung_result):
     return analysis
 
 def get_ilju_analysis_data(ilju_key):
-    """
-    JSON 파일에서 일주 분석 데이터를 찾아 반환합니다.
-    데이터가 없을 경우, 프론트엔드 오류를 방지하기 위해 완전한 형태의 기본값을 반환합니다.
-    """
     try:
         with open(ILJU_DATA_FILE, 'r', encoding='utf-8') as f:
             all_ilju_data = json.load(f)
-        
         ilju_key_korean = "".join([CHEONGAN_KOR[CHEONGAN.find(c)] if c in CHEONGAN else JIJI_KOR[JIJI.find(c)] for c in ilju_key])
-        
-        # 데이터가 있으면 해당 데이터를, 없으면 아래의 안전한 기본값을 반환
         return all_ilju_data.get(ilju_key_korean, {
             "title": f"{ilju_key} ({ilju_key_korean}) 일주 분석",
             "description": f"해당 일주에 대한 데이터는 아직 준비되지 않았습니다.",
-            "pros": [],      # 빈 리스트로 초기화
-            "cons": [],      # 빈 리스트로 초기화
-            "animal": ""     # 빈 문자열로 초기화
+            "pros": [],
+            "cons": [],
+            "animal": ""
         })
     except (FileNotFoundError, json.JSONDecodeError):
         return {"error": "일주 데이터 파일을 읽는 데 문제가 발생했습니다."}
