@@ -80,17 +80,39 @@ def get_saju_details(year, month, day, hour, minute):
     sipsung_analysis = analyze_sipsung_by_period(sipsung_result)
     sibiunseong_analysis = analyze_sibiunseong(pillars_char)
     
-    # 재물운 분석 추가
+    # 새로운 분석 함수들 추가
+    sibisinsal_analysis = analyze_sibisinsal(pillars_char)
+    guin_analysis = analyze_guin(pillars_char)
+    
+    # 기존 분석 함수들 확장
     wealth_luck_analysis = analyze_wealth_luck(sipsung_result)
+    wealth_enhanced = enhance_wealth_analysis(sipsung_result)
+    wealth_luck_analysis.update(wealth_enhanced)
     
-    # 연애운 분석 추가
     love_luck_analysis = analyze_love_luck(sipsung_result)
+    love_enhanced = enhance_love_analysis(sipsung_result)
+    love_luck_analysis.update(love_enhanced)
     
-    # 직업운 분석 추가
     career_luck_analysis = analyze_career_luck(sipsung_result)
+    career_enhanced = enhance_career_analysis(sipsung_result)
+    career_luck_analysis.update(career_enhanced)
     
-    # 건강운 분석 추가
     health_luck_analysis = analyze_health_luck(sipsung_result, pillars_char)
+    health_enhanced = enhance_health_analysis(sipsung_result, pillars_char)
+    health_luck_analysis.update(health_enhanced)
+    
+    # 대운/세운 분석 추가
+    life_flow_analysis = analyze_life_flow(year, month, day, hour, minute, sipsung_result)
+    
+    # 종합 리포트 생성
+    comprehensive_report = generate_comprehensive_report({
+        "sipsung": sipsung_result,
+        "wealth": wealth_luck_analysis,
+        "love": love_luck_analysis,
+        "career": career_luck_analysis,
+        "health": health_luck_analysis,
+        "life_flow": life_flow_analysis
+    })
 
     ilju_analysis_data = get_ilju_analysis_data(f"{day_gan}{JIJI[day_ji_idx]}")
     
@@ -102,10 +124,14 @@ def get_saju_details(year, month, day, hour, minute):
         "sipsung_raw": sipsung_result,
         "sipsung_analysis": sipsung_analysis,
         "sibiunseong_analysis": sibiunseong_analysis,
+        "sibisinsal_analysis": sibisinsal_analysis,
+        "guin_analysis": guin_analysis,
         "wealth_luck_analysis": wealth_luck_analysis,
         "love_luck_analysis": love_luck_analysis,
         "career_luck_analysis": career_luck_analysis,
-        "health_luck_analysis": health_luck_analysis, # 결과에 추가
+        "health_luck_analysis": health_luck_analysis,
+        "life_flow_analysis": life_flow_analysis,
+        "comprehensive_report": comprehensive_report,
         "ilju_analysis": ilju_analysis_data
     }
 
@@ -394,6 +420,121 @@ def analyze_health_luck(sipsung_result, pillars_char):
         "care_advice": care_advice
     }
 
+def analyze_life_flow(year, month, day, hour, minute, sipsung_result):
+    """대운과 세운을 분석하여 인생의 흐름을 분석합니다."""
+    
+    # 현재 나이 계산
+    current_date = datetime.datetime.now()
+    birth_date = datetime.datetime(year, month, day, hour, minute)
+    age = current_date.year - birth_date.year
+    if current_date.month < birth_date.month or (current_date.month == birth_date.month and current_date.day < birth_date.day):
+        age -= 1
+    
+    # 대운 계산 (10년 단위)
+    # 남자는 양년생, 여자는 음년생 기준으로 계산
+    # 여기서는 간단히 남성 기준으로 계산
+    daeun_start_age = 0
+    daeun_periods = []
+    
+    # 현재 대운 찾기
+    current_daeun = (age // 10) + 1
+    daeun_start_age = (current_daeun - 1) * 10
+    
+    # 과거, 현재, 미래 대운 분석
+    for i in range(max(1, current_daeun - 2), current_daeun + 3):
+        daeun_age_start = (i - 1) * 10
+        daeun_age_end = i * 10 - 1
+        
+        if i == current_daeun:
+            period_status = "현재"
+            description = "현재 진행 중인 대운입니다. 이 시기는 인생의 중요한 변화점이 될 수 있습니다."
+        elif i < current_daeun:
+            period_status = "과거"
+            description = "이미 지나간 대운입니다. 이 시기의 경험이 현재에 영향을 미칩니다."
+        else:
+            period_status = "미래"
+            description = "앞으로 맞이할 대운입니다. 준비를 통해 좋은 결과를 얻을 수 있습니다."
+        
+        daeun_periods.append({
+            "period": f"{i}대운",
+            "age_range": f"{daeun_age_start}~{daeun_age_end}세",
+            "status": period_status,
+            "description": description
+        })
+    
+    # 세운 분석 (1년 단위)
+    current_year = current_date.year
+    seun_periods = []
+    
+    # 현재 연도 기준 전후 2년 분석
+    for year_offset in range(-2, 3):
+        target_year = current_year + year_offset
+        
+        if year_offset == 0:
+            year_status = "현재"
+            year_description = "현재 진행 중인 세운입니다. 올해의 운세가 인생에 큰 영향을 미칩니다."
+        elif year_offset < 0:
+            year_status = "과거"
+            year_description = f"{abs(year_offset)}년 전 세운입니다. 이 시기의 경험이 현재에 영향을 미칩니다."
+        else:
+            year_status = "미래"
+            year_description = f"{year_offset}년 후 세운입니다. 준비를 통해 좋은 결과를 얻을 수 있습니다."
+        
+        seun_periods.append({
+            "year": target_year,
+            "status": year_status,
+            "description": year_description
+        })
+    
+    # 인생 변화점 분석
+    change_points = []
+    
+    # 20대 후반 (27-29세) - 첫 번째 변화점
+    if 27 <= age <= 29:
+        change_points.append({
+            "age": "20대 후반",
+            "description": "첫 번째 인생 변화점입니다. 직업이나 연애에서 중요한 결정을 내려야 할 시기입니다."
+        })
+    
+    # 30대 중반 (33-37세) - 두 번째 변화점
+    if 33 <= age <= 37:
+        change_points.append({
+            "age": "30대 중반",
+            "description": "두 번째 인생 변화점입니다. 가정이나 경력에서 중요한 변화가 일어날 수 있습니다."
+        })
+    
+    # 40대 초반 (40-44세) - 세 번째 변화점
+    if 40 <= age <= 44:
+        change_points.append({
+            "age": "40대 초반",
+            "description": "세 번째 인생 변화점입니다. 인생의 방향성을 재정립하는 중요한 시기입니다."
+        })
+    
+    # 50대 중반 (53-57세) - 네 번째 변화점
+    if 53 <= age <= 57:
+        change_points.append({
+            "age": "50대 중반",
+            "description": "네 번째 인생 변화점입니다. 인생의 후반부를 준비하는 중요한 시기입니다."
+        })
+    
+    # 미래 전망
+    if age < 30:
+        future_outlook = "젊은 시기로, 다양한 경험을 쌓고 인생의 기반을 다지는 중요한 시기입니다."
+    elif age < 40:
+        future_outlook = "성장과 발전의 시기로, 경력과 가정에서 중요한 성과를 이룰 수 있는 시기입니다."
+    elif age < 50:
+        future_outlook = "안정과 성숙의 시기로, 지금까지의 경험을 바탕으로 더 큰 성취를 이룰 수 있는 시기입니다."
+    else:
+        future_outlook = "지혜와 여유의 시기로, 인생의 후반부를 의미있게 보낼 수 있는 시기입니다."
+    
+    return {
+        "current_age": age,
+        "daeun_periods": daeun_periods,
+        "seun_periods": seun_periods,
+        "change_points": change_points,
+        "future_outlook": future_outlook
+    }
+
 def calculate_sibiunseong(pillars_char):
     ilgan = pillars_char['day_gan']
     result = {}
@@ -463,3 +604,312 @@ def get_ilju_analysis_data(ilju_key):
         })
     except (FileNotFoundError, json.JSONDecodeError):
         return {"error": "일주 데이터 파일을 읽는 데 문제가 발생했습니다."}
+
+def analyze_sibisinsal(pillars_char):
+    """십이신살을 분석합니다."""
+    try:
+        # 십이신살 계산 로직
+        sibisinsal_result = calculate_sibisinsal(pillars_char)
+        analysis = {}
+        
+        # 시기별 분석
+        periods = ["초년기", "청년기", "중년기", "장년기"]
+        for period in periods:
+            analysis[period] = f"당신의 {period} 시기는 십이신살의 영향을 받습니다. {get_sibisinsal_description(sibisinsal_result, period)}"
+        
+        return analysis
+    except Exception as e:
+        return {"error": f"십이신살 분석 중 오류가 발생했습니다: {str(e)}"}
+
+def calculate_sibisinsal(pillars_char):
+    """십이신살을 계산합니다."""
+    # 간단한 십이신살 계산 로직
+    result = {}
+    for key, char in pillars_char.items():
+        if 'ji' in key:
+            period_key = key.replace('_ji', '살')
+            result[period_key] = get_sibisinsal_type(char)
+    return result
+
+def get_sibisinsal_type(jiji):
+    """지지에 따른 십이신살 유형을 반환합니다."""
+    sibisinsal_map = {
+        "子": "천살", "丑": "천살", "寅": "천살", "卯": "천살",
+        "辰": "천살", "巳": "천살", "午": "천살", "未": "천살",
+        "申": "천살", "酉": "천살", "戌": "천살", "亥": "천살"
+    }
+    return sibisinsal_map.get(jiji, "정보 없음")
+
+def get_sibisinsal_description(sibisinsal_result, period):
+    """십이신살 설명을 반환합니다."""
+    descriptions = {
+        "초년기": "이 시기에는 기본적인 인성과 성격이 형성됩니다.",
+        "청년기": "이 시기에는 사회 진출과 인간관계 형성이 중요합니다.",
+        "중년기": "이 시기에는 가정과 직장에서의 안정이 중요합니다.",
+        "장년기": "이 시기에는 인생의 후반부를 준비하는 시기입니다."
+    }
+    return descriptions.get(period, "해당 시기에 대한 분석입니다.")
+
+def analyze_guin(pillars_char):
+    """귀인을 분석합니다."""
+    try:
+        # 귀인 계산 로직
+        guin_result = calculate_guin(pillars_char)
+        
+        # 시기별 귀인 분석
+        period_analysis = {}
+        periods = ["초년기", "청년기", "중년기", "장년기"]
+        for period in periods:
+            period_analysis[period] = f"당신의 {period} 시기에는 {get_guin_description(guin_result, period)}"
+        
+        # 종합 귀인 분석
+        comprehensive = f"귀인 분석 결과, 당신의 인생에는 {len(guin_result)}명의 중요한 귀인이 나타납니다."
+        
+        # AI 초상화 생성
+        try:
+            portrait_url = generate_ai_portrait("귀인 초상화", guin_result)
+        except:
+            portrait_url = None
+        
+        return {
+            "period_analysis": period_analysis,
+            "comprehensive": comprehensive,
+            "portrait_url": portrait_url
+        }
+    except Exception as e:
+        return {"error": f"귀인 분석 중 오류가 발생했습니다: {str(e)}"}
+
+def calculate_guin(pillars_char):
+    """귀인을 계산합니다."""
+    # 간단한 귀인 계산 로직
+    guin_list = []
+    for key, char in pillars_char.items():
+        if 'gan' in key:
+            guin_type = get_guin_type(char)
+            if guin_type:
+                guin_list.append(guin_type)
+    return guin_list
+
+def get_guin_type(gan):
+    """천간에 따른 귀인 유형을 반환합니다."""
+    guin_map = {
+        "甲": "갑자귀인", "乙": "을자귀인", "丙": "병자귀인", "丁": "정자귀인",
+        "戊": "무자귀인", "己": "기자귀인", "庚": "경자귀인", "辛": "신자귀인",
+        "壬": "임자귀인", "癸": "계자귀인"
+    }
+    return guin_map.get(gan, None)
+
+def get_guin_description(guin_result, period):
+    """귀인 설명을 반환합니다."""
+    descriptions = {
+        "초년기": "가족과 선생님의 도움을 받게 됩니다.",
+        "청년기": "상사나 멘토의 지도를 받게 됩니다.",
+        "중년기": "동료나 파트너의 협력을 받게 됩니다.",
+        "장년기": "후배나 제자의 도움을 받게 됩니다."
+    }
+    return descriptions.get(period, "해당 시기의 귀인 분석입니다.")
+
+def generate_ai_portrait(prompt, guin_data):
+    """AI 초상화를 생성합니다."""
+    try:
+        # API 키가 없으면 None 반환
+        api_key = os.getenv('STABILITY_API_KEY', '')
+        if not api_key:
+            return None
+            
+        full_prompt = f"{prompt}, {guin_data}, professional portrait, detailed, anime style"
+        
+        response = requests.post(
+            "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image",
+            headers={
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": f"Bearer {api_key}"
+            },
+            json={
+                "text_prompts": [
+                    {
+                        "text": full_prompt,
+                        "weight": 1
+                    }
+                ],
+                "cfg_scale": 7,
+                "height": 1024,
+                "width": 1024,
+                "samples": 1,
+                "steps": 30,
+            },
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            return data["artifacts"][0]["base64"]
+        else:
+            return None
+    except Exception as e:
+        print(f"AI 초상화 생성 오류: {e}")
+        return None
+
+def enhance_wealth_analysis(sipsung_result):
+    """재물운 분석을 확장합니다."""
+    sipsung_list = list(sipsung_result.values())
+    
+    # 재성 (재물의 별)
+    jaeseong_count = sipsung_list.count("편재") + sipsung_list.count("정재")
+    # 식상 (재물을 만들어내는 힘)
+    siksang_count = sipsung_list.count("식신") + sipsung_list.count("상관")
+    
+    # 전반적인 재물운 흐름
+    if jaeseong_count > 0 and siksang_count > 0:
+        overall_flow = "재물을 만들어내는 힘과 재물 그 자체를 모두 갖추고 있어, 사업적인 수완이 뛰어납니다."
+    elif jaeseong_count > 0:
+        overall_flow = "재물을 관리하고 활용하는 능력이 뛰어나며, 기회를 포착하여 부를 쌓을 수 있습니다."
+    elif siksang_count > 0:
+        overall_flow = "창의적인 아이디어로 재물을 만들어내는 능력이 있으며, 꾸준한 노력이 성공으로 이어집니다."
+    else:
+        overall_flow = "안정적인 수입을 통해 삶의 기반을 다지는 것이 중요하며, 성실함이 최고의 재산입니다."
+    
+    # 재물운 특징
+    characteristics = []
+    if jaeseong_count > 0:
+        characteristics.append({
+            "title": "재물 관리 능력",
+            "description": "재물을 효율적으로 관리하고 활용하는 능력이 뛰어납니다."
+        })
+    if siksang_count > 0:
+        characteristics.append({
+            "title": "재물 창출 능력",
+            "description": "새로운 아이디어로 재물을 만들어내는 창의성이 뛰어납니다."
+        })
+    
+    # 이익과 손해를 가져다 줄 사람들
+    people_analysis = "재물운과 관련하여, 당신에게 도움을 줄 수 있는 사람들과 주의해야 할 사람들이 있습니다."
+    
+    # 재테크 분석
+    if jaeseong_count > 0 and siksang_count > 0:
+        business_analysis = "사업과 투자를 병행하는 것이 유리하며, 창의적인 아이디어를 사업화하는 능력이 뛰어납니다."
+    elif jaeseong_count > 0:
+        business_analysis = "안정적인 투자와 재무 관리에 집중하는 것이 좋으며, 부동산이나 채권 투자가 유리합니다."
+    elif siksang_count > 0:
+        business_analysis = "창의적인 사업 아이템이나 프리랜서 활동이 유리하며, 자신만의 전문성을 개발하는 것이 중요합니다."
+    else:
+        business_analysis = "안정적인 직장 내에서의 재무 관리가 중요하며, 꾸준한 저축과 보험 가입을 권장합니다."
+    
+    return {
+        "overall_flow": overall_flow,
+        "characteristics": characteristics,
+        "people_analysis": people_analysis,
+        "business_analysis": business_analysis
+    }
+
+def enhance_love_analysis(sipsung_result):
+    """연애운 분석을 확장합니다."""
+    sipsung_list = list(sipsung_result.values())
+    
+    # 관성 (배우자, 연인)
+    gwanseong_count = sipsung_list.count("편관") + sipsung_list.count("정관")
+    # 재성 (재물, 매력)
+    jaeseong_count = sipsung_list.count("편재") + sipsung_list.count("정재")
+    
+    # 전반적인 연애 성향
+    if gwanseong_count > 0 and jaeseong_count > 0:
+        overall_tendency = "열정적이고 활발한 연애를 즐기는 스타일로, 상대방을 사로잡는 매력이 뛰어납니다."
+    elif gwanseong_count > 0:
+        overall_tendency = "진지하고 안정적인 연애를 선호하며, 결혼을 염두에 둔 관계를 추구합니다."
+    elif jaeseong_count > 0:
+        overall_tendency = "자유롭고 독립적인 연애를 선호하며, 매력적이고 독립적인 연애를 즐깁니다."
+    else:
+        overall_tendency = "조용하고 깊이 있는 연애를 선호하며, 천천히 마음을 열어가는 스타일입니다."
+    
+    # 운명의 짝 소개
+    destiny_partner = "당신의 운명의 짝은 당신의 부족한 부분을 보완해주는 사람일 것입니다."
+    
+    # 개선점
+    improvement_points = "연애에서 성공하기 위해서는 상대방을 이해하려는 노력과 진심을 다한 대화가 중요합니다."
+    
+    # 애정운 흐름
+    flow_analysis = "애정운은 인생의 각 시기마다 다른 특성을 보이며, 현재 시기가 중요한 변화점이 될 수 있습니다."
+    
+    # 연애운이 높은 시기와 장소
+    timing_location = "연애운이 높은 시기는 봄과 가을이며, 도서관이나 카페 같은 문화 공간에서 좋은 인연을 만날 수 있습니다."
+    
+    return {
+        "overall_tendency": overall_tendency,
+        "destiny_partner": destiny_partner,
+        "improvement_points": improvement_points,
+        "flow_analysis": flow_analysis,
+        "timing_location": timing_location
+    }
+
+def enhance_career_analysis(sipsung_result):
+    """직업운 분석을 확장합니다."""
+    sipsung_list = list(sipsung_result.values())
+    
+    # 관성 (관리, 리더십)
+    gwanseong_count = sipsung_list.count("편관") + sipsung_list.count("정관")
+    # 식상 (창의성, 전문성)
+    siksang_count = sipsung_list.count("식신") + sipsung_list.count("상관")
+    
+    # 잘 맞는 직업/직장
+    suitable_jobs = []
+    if gwanseong_count > 0:
+        suitable_jobs.extend(["경영자", "관리자", "행정직", "공무원"])
+    if siksang_count > 0:
+        suitable_jobs.extend(["전문가", "프리랜서", "교육자", "컨설턴트"])
+    if not suitable_jobs:
+        suitable_jobs = ["일반 사무직", "서비스업", "생산직"]
+    
+    # 사업 vs 직장 분석
+    if gwanseong_count > 0 and siksang_count > 0:
+        business_vs_job = "리더십과 전문성을 모두 갖추고 있어, 사업과 직장 모두에서 성공할 수 있습니다."
+    elif gwanseong_count > 0:
+        business_vs_job = "관리 능력이 뛰어나 직장에서 승진과 성장을 이룰 수 있습니다."
+    elif siksang_count > 0:
+        business_vs_job = "창의성과 전문성이 뛰어나 독립적인 사업이나 프리랜서 활동이 유리합니다."
+    else:
+        business_vs_job = "안정적인 직장 생활이 적합하며, 꾸준한 노력으로 성장할 수 있습니다."
+    
+    # 성공적인 직장생활을 위한 조언
+    advice = "성공적인 직장생활을 위해서는 끊임없는 자기계발과 팀워크를 중시하는 마음가짐이 중요합니다."
+    
+    # 주의해야 할 사람 분석
+    caution_people = "직장에서 주의해야 할 사람은 당신의 성장을 방해하거나 부정적인 영향을 주는 사람들입니다."
+    
+    return {
+        "suitable_jobs": suitable_jobs,
+        "business_vs_job": business_vs_job,
+        "advice": advice,
+        "caution_people": caution_people
+    }
+
+def enhance_health_analysis(sipsung_result, pillars_char):
+    """건강운 분석을 확장합니다."""
+    # 타고난 체질과 건강 상태
+    constitution = "당신의 타고난 체질을 이해하고 관리하는 것이 건강의 기본입니다."
+    
+    # 잘 맞는 운동
+    suitable_exercise = "당신에게 맞는 운동은 규칙적이고 지속 가능한 운동입니다."
+    
+    # 시기에 따른 건강운
+    timing_analysis = "건강운은 나이와 시기에 따라 변화하므로, 각 시기에 맞는 건강 관리가 중요합니다."
+    
+    return {
+        "constitution": constitution,
+        "suitable_exercise": suitable_exercise,
+        "timing_analysis": timing_analysis
+    }
+
+def generate_comprehensive_report(data):
+    """종합 리포트를 생성합니다."""
+    summary = "당신의 사주를 종합적으로 분석한 결과, 다양한 운세의 조화를 통해 인생의 방향성을 제시합니다."
+    
+    recommendations = "현재 상황과 미래 전망을 고려한 구체적인 권장사항을 제시합니다."
+    
+    future_outlook = "당신의 사주를 바탕으로 한 미래 전망과 준비해야 할 사항들을 안내합니다."
+    
+    return {
+        "summary": summary,
+        "recommendations": recommendations,
+        "future_outlook": future_outlook
+    }

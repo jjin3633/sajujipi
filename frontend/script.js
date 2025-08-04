@@ -643,34 +643,43 @@ function displayDaeunAnalysis(data) {
 // 11. 종합 리포트 표시
 function displayComprehensiveReport(data) {
     const comprehensiveSection = document.getElementById('comprehensive-report-section');
+    const comprehensiveReport = data.comprehensive_report;
     
-    let html = '';
-    
-    // 종합 요약
-    html += `
-        <div id="comprehensive-summary" class="comprehensive-analysis">
-            <h4>종합 요약</h4>
-            <p>${generateComprehensiveSummary(data)}</p>
-        </div>
-    `;
-    
-    // 종합 권장사항
-    html += `
-        <div id="comprehensive-recommendations" class="recommendation-section">
-            <h5>종합 권장사항</h5>
-            <p>${generateComprehensiveRecommendations(data)}</p>
-        </div>
-    `;
-    
-    // 미래 전망
-    html += `
-        <div id="comprehensive-future-outlook" class="future-outlook">
-            <h4>미래 전망</h4>
-            <p>${generateComprehensiveFutureOutlook(data)}</p>
-        </div>
-    `;
-    
-    comprehensiveSection.innerHTML = html;
+    if (comprehensiveReport && !comprehensiveReport.error) {
+        let html = '';
+        
+        // 종합 요약
+        if (comprehensiveReport.summary) {
+            html += `
+                <div id="comprehensive-summary" class="comprehensive-analysis">
+                    <h4>종합 요약</h4>
+                    <p>${comprehensiveReport.summary}</p>
+                </div>
+            `;
+        }
+        
+        // 종합 권장사항
+        if (comprehensiveReport.recommendations) {
+            html += `
+                <div id="comprehensive-recommendations" class="recommendation-section">
+                    <h5>종합 권장사항</h5>
+                    <p>${comprehensiveReport.recommendations}</p>
+                </div>
+            `;
+        }
+        
+        // 미래 전망
+        if (comprehensiveReport.future_outlook) {
+            html += `
+                <div id="comprehensive-future-outlook" class="future-outlook">
+                    <h4>미래 전망</h4>
+                    <p>${comprehensiveReport.future_outlook}</p>
+                </div>
+            `;
+        }
+        
+        comprehensiveSection.innerHTML = html;
+    }
 }
 
 // 헬퍼 함수들
