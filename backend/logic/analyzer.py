@@ -87,6 +87,9 @@ def get_saju_details(year, month, day, hour, minute):
     
     # 연애운 분석 추가
     love_luck_analysis = analyze_love_luck(sipsung_result)
+    
+    # 직업운 분석 추가
+    career_luck_analysis = analyze_career_luck(sipsung_result)
 
     ilju_analysis_data = get_ilju_analysis_data(f"{day_gan}{JIJI[day_ji_idx]}")
     
@@ -99,9 +102,86 @@ def get_saju_details(year, month, day, hour, minute):
         "sipsung_analysis": sipsung_analysis,
         "sibiunseong_analysis": sibiunseong_analysis,
         "wealth_luck_analysis": wealth_luck_analysis,
-        "love_luck_analysis": love_luck_analysis, # 결과에 추가
+        "love_luck_analysis": love_luck_analysis,
+        "career_luck_analysis": career_luck_analysis, # 결과에 추가
         "ilju_analysis": ilju_analysis_data
     }
+
+def analyze_career_luck(sipsung_result):
+    """십성 데이터를 기반으로 직업운을 분석하고 AI 아바타를 생성합니다."""
+    sipsung_list = list(sipsung_result.values())
+    
+    # 관성 (관리, 리더십)
+    gwanseong_count = sipsung_list.count("편관") + sipsung_list.count("정관")
+    # 식상 (창의성, 전문성)
+    siksang_count = sipsung_list.count("식신") + sipsung_list.count("상관")
+    
+    # 직업 스타일 분석
+    if gwanseong_count == 0:
+        if siksang_count > 0:
+            career_style = "창의적 전문가 유형"
+            description = "사주에 관리나 리더십을 나타내는 관성은 뚜렷하지 않지만, 창의성과 전문성을 나타내는 식상이 강합니다. 독립적으로 일하는 전문가나 프리랜서로 성공할 가능성이 높습니다. 자신만의 창의적인 아이디어로 새로운 분야를 개척하는 데 유리합니다."
+            avatar_prompt = "A professional creative expert in modern office, wearing smart casual attire, with laptop and creative tools, confident pose, anime style"
+        else:
+            career_style = "안정적 직장인 유형"
+            description = "사주에 직업과 관련된 기운이 강하지 않아, 안정적이고 체계적인 직장 생활이 적합합니다. 대기업이나 공기업에서 성실하게 일하는 것이 좋으며, 꾸준한 노력으로 승진과 성장을 이룰 수 있습니다. 팀워크를 중시하는 환경에서 잘 적응할 수 있습니다."
+            avatar_prompt = "A reliable office worker in business attire, sitting at desk with documents, professional and diligent, anime style"
+    elif gwanseong_count > 0:
+        if siksang_count > 0:
+            career_style = "리더십 전문가 유형"
+            description = "사주에 관리 능력(관성)과 창의성(식상)을 모두 갖추고 있어, 리더십과 전문성을 겸비한 직업이 적합합니다. 경영자, 컨설턴트, 교육자 등에서 뛰어난 성과를 낼 수 있습니다. 팀을 이끌면서도 창의적인 솔루션을 제시하는 능력이 뛰어납니다."
+            avatar_prompt = "A confident business leader in professional suit, standing in modern office, with leadership aura, commanding presence, anime style"
+        else:
+            career_style = "관리직 전문가 유형"
+            description = "사주에 관리 능력(관성)은 있지만 창의성(식상)이 부족하여, 체계적이고 안정적인 관리직이 적합합니다. 중간 관리자, 행정직, 공무원 등에서 뛰어난 성과를 낼 수 있습니다. 규칙과 절차를 중시하며, 조직을 효율적으로 운영하는 능력이 뛰어납니다."
+            avatar_prompt = "A professional manager in formal business attire, organizing documents, with structured approach, reliable and organized, anime style"
+    
+    # AI 아바타 생성
+    try:
+        avatar_url = generate_ai_avatar(avatar_prompt)
+    except:
+        avatar_url = None
+    
+    return {
+        "title": career_style,
+        "description": description,
+        "avatar_url": avatar_url
+    }
+
+def generate_ai_avatar(prompt):
+    """AI 아바타를 생성합니다."""
+    try:
+        # 여기서는 예시로 간단한 API 호출을 시뮬레이션합니다
+        # 실제로는 Stable Diffusion API나 다른 AI 이미지 생성 서비스를 사용합니다
+        response = requests.post(
+            "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image",
+            headers={
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": f"Bearer {os.getenv('STABILITY_API_KEY', '')}"
+            },
+            json={
+                "text_prompts": [
+                    {
+                        "text": prompt,
+                        "weight": 1
+                    }
+                ],
+                "cfg_scale": 7,
+                "height": 1024,
+                "width": 1024,
+                "samples": 1,
+                "steps": 30,
+            },
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            return data["artifacts"][0]["base64"]
+        else:
+            return None
+    except:
+        return None
 
 def analyze_love_luck(sipsung_result):
     """십성 데이터를 기반으로 연애운을 분석하고 AI 일러스트를 생성합니다."""
