@@ -1,4 +1,5 @@
-    fastapi
+  fastapi
     uvicorn
     korean-lunar-calendar
     gunicorn
+    pycalcal
