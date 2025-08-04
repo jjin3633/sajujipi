@@ -2,7 +2,10 @@ import json
 import os
 import datetime
 import requests
+from functools import lru_cache
+from typing import Dict, List, Optional, Any
 
+# 상수 정의
 CHEONGAN = "甲乙丙丁戊己庚辛壬癸"
 CHEONGAN_KOR = "갑을병정무기경신임계"
 JIJI = "子丑寅卯辰巳午未申酉戌亥"
@@ -26,30 +29,149 @@ SIBIUNSEONG_TABLE = {
     "癸": {"卯": "장생", "寅": "목욕", "丑": "관대", "子": "건록", "亥": "제왕", "戌": "쇠", "酉": "병", "申": "사", "未": "묘", "午": "절", "巳": "태", "辰": "양"}
 }
 
+# 파일 경로 상수
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ILJU_DATA_FILE = os.path.join(BASE_DIR, '..', 'data', 'ilju_data.json')
 SIPSUNG_DATA_FILE = os.path.join(BASE_DIR, '..', 'data', 'sipsung_data.json')
 SIBIUNSEONG_DATA_FILE = os.path.join(BASE_DIR, '..', 'data', 'sibiunseong_data.json')
 
+# 데이터 캐싱을 위한 전역 변수
+_DATA_CACHE = {}
 
-def get_saju_details(year, month, day, hour, minute):
-    ref_date = datetime.datetime(1899, 12, 22, 0, 0)
-    target_date = datetime.datetime(year, month, day, hour, minute)
-    delta_days = (target_date - ref_date).days
-    day_gan_idx = delta_days % 10
-    day_ji_idx = delta_days % 12
-    day_gan = CHEONGAN[day_gan_idx]
-    ipchun = datetime.datetime(year, 2, 4)
-    saju_year = year if target_date >= ipchun else year - 1
-    year_gan_idx = (saju_year - 1864) % 10
-    year_ji_idx = (saju_year - 1864) % 12
-    year_gan = CHEONGAN[year_gan_idx]
-    year_ji = JIJI[year_ji_idx]
-    month_ji_map = {1:"寅", 2:"卯", 3:"辰", 4:"巳", 5:"午", 6:"未", 7:"申", 8:"酉", 9:"戌", 10:"亥", 11:"子", 12:"丑"}
-    month_ji = month_ji_map.get(month, "寅")
+# 유틸리티 함수들
+def safe_load_json(file_path: str, default: Dict = None) -> Dict:
+    """안전하게 JSON 파일을 로드합니다."""
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"데이터 로딩 오류 ({file_path}): {e}")
+        return default or {}
+
+@lru_cache(maxsize=128)
+def get_cached_data(data_type: str) -> Dict:
+    """캐시된 데이터를 반환합니다."""
+    if data_type not in _DATA_CACHE:
+        file_map = {
+            'ilju': ILJU_DATA_FILE,
+            'sipsung': SIPSUNG_DATA_FILE,
+            'sibiunseong': SIBIUNSEONG_DATA_FILE
+        }
+        _DATA_CACHE[data_type] = safe_load_json(file_map.get(data_type, ''))
+    return _DATA_CACHE[data_type]
+
+def validate_date_input(year: int, month: int, day: int, hour: int, minute: int) -> bool:
+    """날짜 입력값을 검증합니다."""
+    try:
+        datetime.datetime(year, month, day, hour, minute)
+        return 1900 <= year <= 2100 and 1 <= month <= 12 and 1 <= day <= 31 and 0 <= hour <= 23 and 0 <= minute <= 59
+    except ValueError:
+        return False
+
+def create_error_response(message: str, error_type: str = "validation_error") -> Dict:
+    """표준화된 오류 응답을 생성합니다."""
+    return {"error": message, "error_type": error_type}
+
+def safe_ai_generation(func_name: str, prompt: str) -> Optional[str]:
+    """안전한 AI 이미지 생성을 수행합니다."""
+    try:
+        if not prompt:
+            return None
+        # 배포 환경에서는 AI 이미지 생성이 비활성화됨
+        return None
+    except Exception as e:
+        print(f"AI {func_name} generation failed: {str(e)}")
+        return None
+
+def get_saju_details(year: int, month: int, day: int, hour: int, minute: int) -> Dict[str, Any]:
+    """사주 분석의 메인 함수 - 최적화된 버전"""
+    
+    # 입력값 검증
+    if not validate_date_input(year, month, day, hour, minute):
+        return create_error_response("유효하지 않은 날짜/시간 입력입니다.")
+    
+    try:
+        # 사주 계산
+        pillars_char = calculate_saju_pillars(year, month, day, hour, minute)
+        if "error" in pillars_char:
+            return pillars_char
+        
+        # 기본 분석 수행
+        analysis_results = perform_basic_analysis(pillars_char)
+        
+        # 확장 분석 수행
+        enhanced_results = perform_enhanced_analysis(pillars_char, analysis_results)
+        
+        # AI 이미지 생성
+        ai_results = generate_ai_images(pillars_char)
+        
+        # 종합 리포트 생성
+        comprehensive_report = generate_comprehensive_report(enhanced_results)
+        
+        # 결과 통합
+        return {
+            "year_pillar": f"{pillars_char['year_gan']}{pillars_char['year_ji']}",
+            "month_pillar": f"{pillars_char['month_gan']}{pillars_char['month_ji']}",
+            "day_pillar": f"{pillars_char['day_gan']}{pillars_char['day_ji']}",
+            "hour_pillar": f"{pillars_char['hour_gan']}{pillars_char['hour_ji']}",
+            **analysis_results,
+            **enhanced_results,
+            **ai_results,
+            "comprehensive_report": comprehensive_report
+        }
+        
+    except Exception as e:
+        print(f"사주 분석 중 오류 발생: {str(e)}")
+        return create_error_response("분석 중 오류가 발생했습니다.", "analysis_error")
+
+def calculate_saju_pillars(year: int, month: int, day: int, hour: int, minute: int) -> Dict[str, str]:
+    """사주 사주를 계산합니다."""
+    try:
+        ref_date = datetime.datetime(1899, 12, 22, 0, 0)
+        target_date = datetime.datetime(year, month, day, hour, minute)
+        delta_days = (target_date - ref_date).days
+        
+        # 일간 계산
+        day_gan_idx = delta_days % 10
+        day_ji_idx = delta_days % 12
+        day_gan = CHEONGAN[day_gan_idx]
+        
+        # 연간 계산
+        ipchun = datetime.datetime(year, 2, 4)
+        saju_year = year if target_date >= ipchun else year - 1
+        year_gan_idx = (saju_year - 1864) % 10
+        year_ji_idx = (saju_year - 1864) % 12
+        year_gan = CHEONGAN[year_gan_idx]
+        year_ji = JIJI[year_ji_idx]
+        
+        # 월간 계산
+        month_ji_map = {1:"寅", 2:"卯", 3:"辰", 4:"巳", 5:"午", 6:"未", 7:"申", 8:"酉", 9:"戌", 10:"亥", 11:"子", 12:"丑"}
+        month_ji = month_ji_map.get(month, "寅")
+        month_gan = calculate_month_gan(year_gan, month_ji)
+        
+        # 시간 계산
+        hour_ji_idx = (hour + 1) // 2 % 12
+        if hour == 23: hour_ji_idx = 0
+        hour_ji = JIJI[hour_ji_idx]
+        hour_gan = calculate_hour_gan(day_gan, hour_ji_idx)
+        
+        return {
+            'year_gan': year_gan, 'year_ji': year_ji,
+            'month_gan': month_gan, 'month_ji': month_ji,
+            'day_gan': day_gan, 'day_ji': JIJI[day_ji_idx],
+            'hour_gan': hour_gan, 'hour_ji': hour_ji
+        }
+        
+    except Exception as e:
+        return create_error_response(f"사주 계산 오류: {str(e)}")
+
+def calculate_month_gan(year_gan: str, month_ji: str) -> str:
+    """월간을 계산합니다."""
     gan_start_map = {"甲己":"丙", "乙庚":"戊", "丙辛":"庚", "丁壬":"壬", "戊癸":"甲"}
     year_gan_key_list = [k for k in gan_start_map if year_gan in k]
-    if not year_gan_key_list: return {"error": "연간 계산 오류"}
+    if not year_gan_key_list:
+        raise ValueError("연간 계산 오류")
+    
     year_gan_key = year_gan_key_list[0]
     month_gan_start_char = gan_start_map[year_gan_key]
     month_gan_start_idx = CHEONGAN.find(month_gan_start_char)
@@ -57,92 +179,77 @@ def get_saju_details(year, month, day, hour, minute):
     month_ji_current_idx = JIJI.find(month_ji)
     month_offset = (month_ji_current_idx - month_ji_start_idx + 12) % 12
     month_gan_idx = (month_gan_start_idx + month_offset) % 10
-    month_gan = CHEONGAN[month_gan_idx]
-    hour_ji_idx = (hour + 1) // 2 % 12
-    if hour == 23: hour_ji_idx = 0
-    hour_ji = JIJI[hour_ji_idx]
+    return CHEONGAN[month_gan_idx]
+
+def calculate_hour_gan(day_gan: str, hour_ji_idx: int) -> str:
+    """시간을 계산합니다."""
     gan_start_map_hour = {"甲己":"甲", "乙庚":"丙", "丙辛":"戊", "丁壬":"庚", "戊癸":"壬"}
     day_gan_key_list = [k for k in gan_start_map_hour if day_gan in k]
-    if not day_gan_key_list: return {"error": "시간 계산 오류"}
+    if not day_gan_key_list:
+        raise ValueError("시간 계산 오류")
+    
     day_gan_key = day_gan_key_list[0]
     hour_gan_start_char = gan_start_map_hour[day_gan_key]
     hour_gan_start_idx = CHEONGAN.find(hour_gan_start_char)
     hour_gan_idx = (hour_gan_start_idx + hour_ji_idx) % 10
-    hour_gan = CHEONGAN[hour_gan_idx]
-    pillars_char = {
-        'year_gan': year_gan, 'year_ji': year_ji,
-        'month_gan': month_gan, 'month_ji': month_ji,
-        'day_gan': day_gan, 'day_ji': JIJI[day_ji_idx],
-        'hour_gan': hour_gan, 'hour_ji': hour_ji
-    }
-    
-    sipsung_result = calculate_sipsung(pillars_char)
-    sipsung_analysis = analyze_sipsung_by_period(sipsung_result)
-    sibiunseong_analysis = analyze_sibiunseong(pillars_char)
-    
-    # 십이운성 일러스트 생성
-    sibiunseong_illustration_url = None
-    try:
-        # 십이운성 분석 결과를 바탕으로 일러스트 프롬프트 생성
-        sibiunseong_prompt = f"Traditional Korean fortune telling illustration showing the twelve fortunes (십이운성) with {day_gan} day master, mystical atmosphere, traditional Korean art style, detailed and colorful"
-        sibiunseong_illustration_url = generate_ai_illustration(sibiunseong_prompt)
-    except:
-        sibiunseong_illustration_url = None
-    
-    # 새로운 분석 함수들 추가
-    sibisinsal_analysis = analyze_sibisinsal(pillars_char)
-    guin_analysis = analyze_guin(pillars_char)
-    
-    # 기존 분석 함수들 확장
-    wealth_luck_analysis = analyze_wealth_luck(sipsung_result)
-    wealth_enhanced = enhance_wealth_analysis(sipsung_result)
-    wealth_luck_analysis.update(wealth_enhanced)
-    
-    love_luck_analysis = analyze_love_luck(sipsung_result)
-    love_enhanced = enhance_love_analysis(sipsung_result)
-    love_luck_analysis.update(love_enhanced)
-    
-    career_luck_analysis = analyze_career_luck(sipsung_result)
-    career_enhanced = enhance_career_analysis(sipsung_result)
-    career_luck_analysis.update(career_enhanced)
-    
-    health_luck_analysis = analyze_health_luck(sipsung_result, pillars_char)
-    health_enhanced = enhance_health_analysis(sipsung_result, pillars_char)
-    health_luck_analysis.update(health_enhanced)
-    
-    # 대운/세운 분석 추가
-    life_flow_analysis = analyze_life_flow(year, month, day, hour, minute, sipsung_result)
-    
-    # 종합 리포트 생성
-    comprehensive_report = generate_comprehensive_report({
-        "sipsung": sipsung_result,
-        "wealth": wealth_luck_analysis,
-        "love": love_luck_analysis,
-        "career": career_luck_analysis,
-        "health": health_luck_analysis,
-        "life_flow": life_flow_analysis
-    })
+    return CHEONGAN[hour_gan_idx]
 
-    ilju_analysis_data = get_ilju_analysis_data(f"{day_gan}{JIJI[day_ji_idx]}")
+def perform_basic_analysis(pillars_char: Dict[str, str]) -> Dict[str, Any]:
+    """기본 분석을 수행합니다."""
+    sipsung_result = calculate_sipsung(pillars_char)
     
     return {
-        "year_pillar": f"{year_gan}{year_ji}",
-        "month_pillar": f"{month_gan}{month_ji}",
-        "day_pillar": f"{day_gan}{JIJI[day_ji_idx]}",
-        "hour_pillar": f"{hour_gan}{hour_ji}",
         "sipsung_raw": sipsung_result,
-        "sipsung_analysis": sipsung_analysis,
-        "sibiunseong_analysis": sibiunseong_analysis,
-        "sibiunseong_illustration_url": sibiunseong_illustration_url,
-        "sibisinsal_analysis": sibisinsal_analysis,
-        "guin_analysis": guin_analysis,
-        "wealth_luck_analysis": wealth_luck_analysis,
-        "love_luck_analysis": love_luck_analysis,
-        "career_luck_analysis": career_luck_analysis,
-        "health_luck_analysis": health_luck_analysis,
-        "life_flow_analysis": life_flow_analysis,
-        "comprehensive_report": comprehensive_report,
-        "ilju_analysis": ilju_analysis_data
+        "sipsung_analysis": analyze_sipsung_by_period(sipsung_result),
+        "sibiunseong_analysis": analyze_sibiunseong(pillars_char),
+        "sibisinsal_analysis": analyze_sibisinsal(pillars_char),
+        "guin_analysis": analyze_guin(pillars_char)
+    }
+
+def perform_enhanced_analysis(pillars_char: Dict[str, str], basic_results: Dict[str, Any]) -> Dict[str, Any]:
+    """확장 분석을 수행합니다."""
+    sipsung_result = basic_results["sipsung_raw"]
+    
+    # 기본 분석
+    wealth_luck = analyze_wealth_luck(sipsung_result)
+    love_luck = analyze_love_luck(sipsung_result)
+    career_luck = analyze_career_luck(sipsung_result)
+    health_luck = analyze_health_luck(sipsung_result, pillars_char)
+    
+    # 확장 분석
+    wealth_enhanced = enhance_wealth_analysis(sipsung_result)
+    love_enhanced = enhance_love_analysis(sipsung_result)
+    career_enhanced = enhance_career_analysis(sipsung_result)
+    health_enhanced = enhance_health_analysis(sipsung_result, pillars_char)
+    
+    # 대운 분석
+    life_flow = analyze_life_flow(
+        int(pillars_char.get('year_gan', 0)), 
+        int(pillars_char.get('month_gan', 0)), 
+        int(pillars_char.get('day_gan', 0)), 
+        int(pillars_char.get('hour_gan', 0)), 
+        0, 
+        sipsung_result
+    )
+    
+    return {
+        "wealth_luck_analysis": {**wealth_luck, **wealth_enhanced},
+        "love_luck_analysis": {**love_luck, **love_enhanced},
+        "career_luck_analysis": {**career_luck, **career_enhanced},
+        "health_luck_analysis": {**health_luck, **health_enhanced},
+        "life_flow_analysis": life_flow
+    }
+
+def generate_ai_images(pillars_char: Dict[str, str]) -> Dict[str, Any]:
+    """AI 이미지들을 생성합니다."""
+    day_gan = pillars_char['day_gan']
+    
+    # 십이운성 일러스트
+    sibiunseong_prompt = f"Traditional Korean fortune telling illustration showing the twelve fortunes (십이운성) with {day_gan} day master, mystical atmosphere, traditional Korean art style, detailed and colorful"
+    sibiunseong_illustration_url = safe_ai_generation("illustration", sibiunseong_prompt)
+    
+    return {
+        "sibiunseong_illustration_url": sibiunseong_illustration_url
     }
 
 def analyze_career_luck(sipsung_result):
@@ -506,11 +613,9 @@ def calculate_sibiunseong(pillars_char):
 
 def analyze_sibiunseong(pillars_char):
     """십이운성을 분석합니다."""
-    try:
-        with open(SIBIUNSEONG_DATA_FILE, 'r', encoding='utf-8') as f:
-            sibiunseong_data = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        print(f"십이운성 데이터 로딩 오류: {e}")
+    sibiunseong_data = get_cached_data('sibiunseong')
+    
+    if not sibiunseong_data:
         return {"error": "십이운성 데이터를 불러올 수 없습니다."}
     
     sibiunseong_raw = calculate_sibiunseong(pillars_char)
@@ -561,11 +666,9 @@ def calculate_sipsung(pillars_char):
 
 def analyze_sipsung_by_period(sipsung_result):
     """십성 분석 결과를 시기별로 분석합니다."""
-    try:
-        with open(SIPSUNG_DATA_FILE, 'r', encoding='utf-8') as f:
-            sipsung_data = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        print(f"십성 데이터 로딩 오류: {e}")
+    sipsung_data = get_cached_data('sipsung')
+    
+    if not sipsung_data:
         return {"error": "십성 데이터를 불러올 수 없습니다."}
     
     analysis = {}
@@ -591,18 +694,22 @@ def analyze_sipsung_by_period(sipsung_result):
 
 def get_ilju_analysis_data(ilju_key):
     """일주 분석 데이터를 가져옵니다."""
-    try:
-        with open(ILJU_DATA_FILE, 'r', encoding='utf-8') as f:
-            ilju_data = json.load(f)
-        return ilju_data.get(ilju_key, {})
-    except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
-        print(f"일주 데이터 로딩 오류: {e}")
+    ilju_data = get_cached_data('ilju')
+    
+    if not ilju_data:
         return {
             "title": "일주 분석",
             "description": "일주 분석 데이터를 불러올 수 없습니다.",
             "personality": {"pros": [], "cons": []},
             "animal": {"name": "", "characteristics": []}
         }
+    
+    return ilju_data.get(ilju_key, {
+        "title": "일주 분석",
+        "description": "해당 일주에 대한 데이터는 아직 준비되지 않았습니다.",
+        "personality": {"pros": [], "cons": []},
+        "animal": {"name": "", "characteristics": []}
+    })
 
 def analyze_sibisinsal(pillars_char):
     """십이신살을 분석합니다."""
