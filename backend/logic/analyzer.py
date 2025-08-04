@@ -17,7 +17,7 @@ EUMYANG_JIJI = {"子":"+", "丑":"-", "寅":"+", "卯":"-", "辰":"+", "巳":"-"
 SIPSUNG_OHENG_ORDER = "목화토금수"
 SIPSUNG_MAP = [["비견", "겁재", "식신", "상관", "편재", "정재", "편관", "정관", "편인", "정인"],["겁재", "비견", "상관", "식신", "정재", "편재", "정관", "편관", "정인", "편인"]]
 SIBIUNSEONG_TABLE = {
-    "甲": {"亥": "장생", "子": "목욕", "丑": "관대", "寅": "건록", "卯": "제왕", "辰": "쇠", "巳": "병", "午": "사", "未": "묘", "申": "절", "酉": "태", "戌": "양"},
+    "甲": {"亥": "장생", "子": "목욕", "丑": "관대", "寅": "건록", "卯": "제왕", "辰": "쇠", "巳": "병", "未": "묘", "申": "절", "酉": "태", "戌": "양"},
     "丙": {"寅": "장생", "卯": "목욕", "辰": "관대", "巳": "건록", "午": "제왕", "未": "쇠", "申": "병", "酉": "사", "戌": "묘", "亥": "절", "子": "태", "丑": "양"},
     "戊": {"寅": "장생", "卯": "목욕", "辰": "관대", "巳": "건록", "午": "제왕", "未": "쇠", "申": "병", "酉": "사", "戌": "묘", "亥": "절", "子": "태", "丑": "양"},
     "庚": {"巳": "장생", "午": "목욕", "未": "관대", "申": "건록", "酉": "제왕", "戌": "쇠", "亥": "병", "子": "사", "丑": "묘", "寅": "절", "卯": "태", "辰": "양"},
@@ -108,6 +108,9 @@ def get_saju_details(year: int, month: int, day: int, hour: int, minute: int) ->
         # 종합 리포트 생성
         comprehensive_report = generate_comprehensive_report(enhanced_results)
         
+        # 일주 분석 데이터 가져오기
+        ilju_analysis_data = get_ilju_analysis_data(f"{pillars_char['day_gan']}{pillars_char['day_ji']}")
+        
         # 결과 통합
         return {
             "year_pillar": f"{pillars_char['year_gan']}{pillars_char['year_ji']}",
@@ -117,7 +120,8 @@ def get_saju_details(year: int, month: int, day: int, hour: int, minute: int) ->
             **analysis_results,
             **enhanced_results,
             **ai_results,
-            "comprehensive_report": comprehensive_report
+            "comprehensive_report": comprehensive_report,
+            "ilju_analysis": ilju_analysis_data
         }
         
     except Exception as e:
@@ -487,7 +491,7 @@ def analyze_health_luck(sipsung_result, pillars_char):
         "care_advice": care_advice
     }
 
-def analyze_life_flow(year, month, day, hour, minute, sipsung_result):
+def analyze_life_flow(year: int, month: int, day: int, hour: int, minute: int, sipsung_result: Dict[str, str]) -> Dict[str, Any]:
     """대운과 세운을 분석하여 인생의 흐름을 분석합니다."""
     
     # 현재 나이 계산
@@ -602,7 +606,8 @@ def analyze_life_flow(year, month, day, hour, minute, sipsung_result):
         "future_outlook": future_outlook
     }
 
-def calculate_sibiunseong(pillars_char):
+def calculate_sibiunseong(pillars_char: Dict[str, str]) -> Dict[str, str]:
+    """십이운성을 계산합니다."""
     ilgan = pillars_char['day_gan']
     result = {}
     for key, jiji in pillars_char.items():
@@ -611,41 +616,8 @@ def calculate_sibiunseong(pillars_char):
             result[period_key] = SIBIUNSEONG_TABLE[ilgan].get(jiji, "정보 없음")
     return result
 
-def analyze_sibiunseong(pillars_char):
-    """십이운성을 분석합니다."""
-    sibiunseong_data = get_cached_data('sibiunseong')
-    
-    if not sibiunseong_data:
-        return {"error": "십이운성 데이터를 불러올 수 없습니다."}
-    
-    sibiunseong_raw = calculate_sibiunseong(pillars_char)
-    analysis = {}
-    
-    # 영어 키를 한글로 매핑
-    period_mapping = {
-        'year': '연간',
-        'month': '월간', 
-        'day': '일간',
-        'hour': '시간'
-    }
-    
-    for period, unseong_name in sibiunseong_raw.items():
-        # 영어 키를 한글로 변환
-        korean_period = period_mapping.get(period, period)
-        unseong_info = sibiunseong_data.get(unseong_name, {})
-        analysis[korean_period] = f"당신의 {korean_period} 시기는 '{unseong_name}'의 기운입니다. ({unseong_info.get('keyword', '')}) {unseong_info.get('description', '')}"
-    
-    # 종합 분석
-    comprehensive = []
-    for period, unseong_name in sibiunseong_raw.items():
-        korean_period = period_mapping.get(period, period)
-        unseong_info = sibiunseong_data.get(unseong_name, {})
-        comprehensive.append(f"{korean_period}: {unseong_name} - {unseong_info.get('description', '')}")
-    
-    analysis['종합'] = " ".join(comprehensive)
-    return analysis
-
-def calculate_sipsung(pillars_char):
+def calculate_sipsung(pillars_char: Dict[str, str]) -> Dict[str, str]:
+    """십성을 계산합니다."""
     ilgan_char = pillars_char['day_gan']
     ilgan_oheng = OHENG_GAN[ilgan_char]
     ilgan_eumyang = EUMYANG_GAN[ilgan_char]
@@ -664,54 +636,7 @@ def calculate_sipsung(pillars_char):
         sipsung_result[key] = SIPSUNG_MAP[ilgan_eumyang_idx][base_sipsung_idx]
     return sipsung_result
 
-def analyze_sipsung_by_period(sipsung_result):
-    """십성 분석 결과를 시기별로 분석합니다."""
-    sipsung_data = get_cached_data('sipsung')
-    
-    if not sipsung_data:
-        return {"error": "십성 데이터를 불러올 수 없습니다."}
-    
-    analysis = {}
-    periods = ['year', 'month', 'day', 'hour']
-    period_names = ['연간', '월간', '일간', '시간']
-    
-    for i, period in enumerate(periods):
-        if period in sipsung_result:
-            sipsung_name = sipsung_result[period]
-            sipsung_info = sipsung_data.get(sipsung_name, {})
-            analysis[period_names[i]] = f"당신의 {period_names[i]} 십성은 '{sipsung_name}'입니다. {sipsung_info.get('description', '')}"
-    
-    # 종합 분석
-    comprehensive = []
-    for period in periods:
-        if period in sipsung_result:
-            sipsung_name = sipsung_result[period]
-            sipsung_info = sipsung_data.get(sipsung_name, {})
-            comprehensive.append(f"{sipsung_name}: {sipsung_info.get('description', '')}")
-    
-    analysis['종합'] = " ".join(comprehensive)
-    return analysis
-
-def get_ilju_analysis_data(ilju_key):
-    """일주 분석 데이터를 가져옵니다."""
-    ilju_data = get_cached_data('ilju')
-    
-    if not ilju_data:
-        return {
-            "title": "일주 분석",
-            "description": "일주 분석 데이터를 불러올 수 없습니다.",
-            "personality": {"pros": [], "cons": []},
-            "animal": {"name": "", "characteristics": []}
-        }
-    
-    return ilju_data.get(ilju_key, {
-        "title": "일주 분석",
-        "description": "해당 일주에 대한 데이터는 아직 준비되지 않았습니다.",
-        "personality": {"pros": [], "cons": []},
-        "animal": {"name": "", "characteristics": []}
-    })
-
-def analyze_sibisinsal(pillars_char):
+def analyze_sibisinsal(pillars_char: Dict[str, str]) -> Dict[str, str]:
     """십이신살을 분석합니다."""
     try:
         # 십이신살 계산 로직
@@ -727,7 +652,7 @@ def analyze_sibisinsal(pillars_char):
     except Exception as e:
         return {"error": f"십이신살 분석 중 오류가 발생했습니다: {str(e)}"}
 
-def calculate_sibisinsal(pillars_char):
+def calculate_sibisinsal(pillars_char: Dict[str, str]) -> Dict[str, str]:
     """십이신살을 계산합니다."""
     # 간단한 십이신살 계산 로직
     result = {}
@@ -737,7 +662,7 @@ def calculate_sibisinsal(pillars_char):
             result[period_key] = get_sibisinsal_type(char)
     return result
 
-def get_sibisinsal_type(jiji):
+def get_sibisinsal_type(jiji: str) -> str:
     """지지에 따른 십이신살 유형을 반환합니다."""
     sibisinsal_map = {
         "子": "천살", "丑": "천살", "寅": "천살", "卯": "천살",
@@ -746,7 +671,7 @@ def get_sibisinsal_type(jiji):
     }
     return sibisinsal_map.get(jiji, "정보 없음")
 
-def get_sibisinsal_description(sibisinsal_result, period):
+def get_sibisinsal_description(sibisinsal_result: Dict[str, str], period: str) -> str:
     """십이신살 설명을 반환합니다."""
     descriptions = {
         "초년기": "이 시기에는 기본적인 인성과 성격이 형성됩니다.",
@@ -756,7 +681,7 @@ def get_sibisinsal_description(sibisinsal_result, period):
     }
     return descriptions.get(period, "해당 시기에 대한 분석입니다.")
 
-def analyze_guin(pillars_char):
+def analyze_guin(pillars_char: Dict[str, str]) -> Dict[str, Any]:
     """귀인을 분석합니다."""
     try:
         # 귀인 계산 로직
@@ -785,7 +710,7 @@ def analyze_guin(pillars_char):
     except Exception as e:
         return {"error": f"귀인 분석 중 오류가 발생했습니다: {str(e)}"}
 
-def calculate_guin(pillars_char):
+def calculate_guin(pillars_char: Dict[str, str]) -> List[str]:
     """귀인을 계산합니다."""
     # 간단한 귀인 계산 로직
     guin_list = []
@@ -796,7 +721,7 @@ def calculate_guin(pillars_char):
                 guin_list.append(guin_type)
     return guin_list
 
-def get_guin_type(gan):
+def get_guin_type(gan: str) -> Optional[str]:
     """천간에 따른 귀인 유형을 반환합니다."""
     guin_map = {
         "甲": "갑자귀인", "乙": "을자귀인", "丙": "병자귀인", "丁": "정자귀인",
@@ -805,7 +730,7 @@ def get_guin_type(gan):
     }
     return guin_map.get(gan, None)
 
-def get_guin_description(guin_result, period):
+def get_guin_description(guin_result: List[str], period: str) -> str:
     """귀인 설명을 반환합니다."""
     descriptions = {
         "초년기": "가족과 선생님의 도움을 받게 됩니다.",
@@ -815,7 +740,7 @@ def get_guin_description(guin_result, period):
     }
     return descriptions.get(period, "해당 시기의 귀인 분석입니다.")
 
-def generate_ai_portrait(prompt, guin_data):
+def generate_ai_portrait(prompt: str, guin_data: List[str]) -> Optional[str]:
     """AI 초상화 생성 함수 - 배포 환경 안정성을 위해 수정"""
     try:
         # 배포 환경에서는 AI 이미지 생성이 불가능할 수 있으므로 기본값 반환
@@ -830,7 +755,7 @@ def generate_ai_portrait(prompt, guin_data):
         print(f"AI portrait generation failed: {str(e)}")
         return None
 
-def enhance_wealth_analysis(sipsung_result):
+def enhance_wealth_analysis(sipsung_result: Dict[str, str]) -> Dict[str, Any]:
     """재물운 분석을 확장합니다."""
     sipsung_list = list(sipsung_result.values())
     
@@ -882,7 +807,7 @@ def enhance_wealth_analysis(sipsung_result):
         "business_analysis": business_analysis
     }
 
-def enhance_love_analysis(sipsung_result):
+def enhance_love_analysis(sipsung_result: Dict[str, str]) -> Dict[str, str]:
     """연애운 분석을 확장합니다."""
     sipsung_list = list(sipsung_result.values())
     
@@ -921,7 +846,7 @@ def enhance_love_analysis(sipsung_result):
         "timing_location": timing_location
     }
 
-def enhance_career_analysis(sipsung_result):
+def enhance_career_analysis(sipsung_result: Dict[str, str]) -> Dict[str, Any]:
     """직업운 분석을 확장합니다."""
     sipsung_list = list(sipsung_result.values())
     
@@ -962,7 +887,7 @@ def enhance_career_analysis(sipsung_result):
         "caution_people": caution_people
     }
 
-def enhance_health_analysis(sipsung_result, pillars_char):
+def enhance_health_analysis(sipsung_result: Dict[str, str], pillars_char: Dict[str, str]) -> Dict[str, str]:
     """건강운 분석을 확장합니다."""
     # 타고난 체질과 건강 상태
     constitution = "당신의 타고난 체질을 이해하고 관리하는 것이 건강의 기본입니다."
@@ -979,7 +904,7 @@ def enhance_health_analysis(sipsung_result, pillars_char):
         "timing_analysis": timing_analysis
     }
 
-def generate_comprehensive_report(data):
+def generate_comprehensive_report(data: Dict[str, Any]) -> Dict[str, str]:
     """종합 리포트를 생성합니다."""
     summary = "당신의 사주를 종합적으로 분석한 결과, 다양한 운세의 조화를 통해 인생의 방향성을 제시합니다."
     
@@ -992,3 +917,84 @@ def generate_comprehensive_report(data):
         "recommendations": recommendations,
         "future_outlook": future_outlook
     }
+
+def analyze_sibiunseong(pillars_char: Dict[str, str]) -> Dict[str, str]:
+    """십이운성을 분석합니다."""
+    sibiunseong_data = get_cached_data('sibiunseong')
+    
+    if not sibiunseong_data:
+        return {"error": "십이운성 데이터를 불러올 수 없습니다."}
+    
+    sibiunseong_raw = calculate_sibiunseong(pillars_char)
+    analysis = {}
+    
+    # 영어 키를 한글로 매핑
+    period_mapping = {
+        'year': '연간',
+        'month': '월간', 
+        'day': '일간',
+        'hour': '시간'
+    }
+    
+    for period, unseong_name in sibiunseong_raw.items():
+        # 영어 키를 한글로 변환
+        korean_period = period_mapping.get(period, period)
+        unseong_info = sibiunseong_data.get(unseong_name, {})
+        analysis[korean_period] = f"당신의 {korean_period} 시기는 '{unseong_name}'의 기운입니다. ({unseong_info.get('keyword', '')}) {unseong_info.get('description', '')}"
+    
+    # 종합 분석
+    comprehensive = []
+    for period, unseong_name in sibiunseong_raw.items():
+        korean_period = period_mapping.get(period, period)
+        unseong_info = sibiunseong_data.get(unseong_name, {})
+        comprehensive.append(f"{korean_period}: {unseong_name} - {unseong_info.get('description', '')}")
+    
+    analysis['종합'] = " ".join(comprehensive)
+    return analysis
+
+def analyze_sipsung_by_period(sipsung_result: Dict[str, str]) -> Dict[str, str]:
+    """십성 분석 결과를 시기별로 분석합니다."""
+    sipsung_data = get_cached_data('sipsung')
+    
+    if not sipsung_data:
+        return {"error": "십성 데이터를 불러올 수 없습니다."}
+    
+    analysis = {}
+    periods = ['year', 'month', 'day', 'hour']
+    period_names = ['연간', '월간', '일간', '시간']
+    
+    for i, period in enumerate(periods):
+        if period in sipsung_result:
+            sipsung_name = sipsung_result[period]
+            sipsung_info = sipsung_data.get(sipsung_name, {})
+            analysis[period_names[i]] = f"당신의 {period_names[i]} 십성은 '{sipsung_name}'입니다. {sipsung_info.get('description', '')}"
+    
+    # 종합 분석
+    comprehensive = []
+    for period in periods:
+        if period in sipsung_result:
+            sipsung_name = sipsung_result[period]
+            sipsung_info = sipsung_data.get(sipsung_name, {})
+            comprehensive.append(f"{sipsung_name}: {sipsung_info.get('description', '')}")
+    
+    analysis['종합'] = " ".join(comprehensive)
+    return analysis
+
+def get_ilju_analysis_data(ilju_key: str) -> Dict[str, Any]:
+    """일주 분석 데이터를 가져옵니다."""
+    ilju_data = get_cached_data('ilju')
+    
+    if not ilju_data:
+        return {
+            "title": "일주 분석",
+            "description": "일주 분석 데이터를 불러올 수 없습니다.",
+            "personality": {"pros": [], "cons": []},
+            "animal": {"name": "", "characteristics": []}
+        }
+    
+    return ilju_data.get(ilju_key, {
+        "title": "일주 분석",
+        "description": "해당 일주에 대한 데이터는 아직 준비되지 않았습니다.",
+        "personality": {"pros": [], "cons": []},
+        "animal": {"name": "", "characteristics": []}
+    })
