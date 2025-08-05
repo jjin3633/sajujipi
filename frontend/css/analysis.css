@@ -1,0 +1,284 @@
+/* 분석 결과 전용 스타일 */
+
+/* 분석 섹션 */
+.analysis-section {
+    margin-bottom: var(--spacing-lg);
+    opacity: 0;
+    animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+/* 분석 카드 변형 */
+.analysis-card {
+    background: linear-gradient(135deg, var(--bg-white) 0%, var(--bg-secondary) 100%);
+    border: none;
+    box-shadow: var(--shadow-md);
+}
+
+.analysis-card .card-title {
+    font-size: var(--font-xl);
+    color: var(--primary-dark);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.analysis-card .card-title::before {
+    content: '';
+    width: 4px;
+    height: 24px;
+    background-color: var(--primary-color);
+    border-radius: var(--radius-sm);
+}
+
+/* 일주 분석 */
+.ilju-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.ilju-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, var(--primary-light) 0%, transparent 70%);
+    transform: translate(30px, -30px);
+}
+
+/* 십성 분석 */
+.sipsung-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
+.sipsung-item {
+    background-color: var(--bg-secondary);
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    text-align: center;
+}
+
+.sipsung-label {
+    font-size: var(--font-xs);
+    color: var(--text-light);
+    margin-bottom: 4px;
+}
+
+.sipsung-value {
+    font-size: var(--font-md);
+    font-weight: 600;
+    color: var(--primary-dark);
+}
+
+/* 십이운성 분석 */
+.sibiunseong-chart {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    height: 200px;
+    margin: var(--spacing-md) 0;
+    padding: var(--spacing-sm);
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+}
+
+.sibiunseong-bar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    margin: 0 var(--spacing-xs);
+}
+
+.sibiunseong-bar-fill {
+    width: 100%;
+    background: linear-gradient(to top, var(--primary-color), var(--primary-light));
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    transition: height 0.5s ease;
+}
+
+.sibiunseong-label {
+    margin-top: var(--spacing-xs);
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+}
+
+/* 재물운 분석 */
+.wealth-graph {
+    width: 100%;
+    height: auto;
+    margin: var(--spacing-md) 0;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+}
+
+.wealth-indicators {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+}
+
+.wealth-indicator {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.wealth-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    background-color: var(--primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-lg);
+}
+
+/* 연애운 분석 */
+.love-compatibility {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-lg);
+    margin: var(--spacing-lg) 0;
+}
+
+.love-person {
+    text-align: center;
+}
+
+.love-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: var(--radius-full);
+    margin-bottom: var(--spacing-sm);
+    border: 3px solid var(--primary-light);
+}
+
+.love-heart {
+    font-size: var(--font-2xl);
+    color: var(--accent-color);
+    animation: heartbeat 1.5s ease infinite;
+}
+
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+/* 직업운 분석 */
+.career-recommendations {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
+.career-tag {
+    background-color: var(--primary-light);
+    color: var(--primary-dark);
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: 20px;
+    font-size: var(--font-sm);
+    font-weight: 600;
+}
+
+/* 건강운 분석 */
+.health-status {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+}
+
+.health-item {
+    text-align: center;
+    padding: var(--spacing-md);
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-md);
+}
+
+.health-score {
+    font-size: var(--font-2xl);
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.health-label {
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    margin-top: var(--spacing-xs);
+}
+
+/* 대운 분석 */
+.daeun-timeline {
+    position: relative;
+    padding-left: var(--spacing-lg);
+    margin-top: var(--spacing-md);
+}
+
+.daeun-timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: var(--border-medium);
+}
+
+.daeun-period {
+    position: relative;
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-md);
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+}
+
+.daeun-period::before {
+    content: '';
+    position: absolute;
+    left: -25px;
+    top: 20px;
+    width: 12px;
+    height: 12px;
+    border-radius: var(--radius-full);
+    background-color: var(--primary-color);
+    border: 2px solid var(--bg-white);
+}
+
+.daeun-period.current {
+    background-color: var(--primary-light);
+    border: 2px solid var(--primary-color);
+}
+
+/* 종합 리포트 */
+.comprehensive-summary {
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--bg-white) 100%);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    margin-top: var(--spacing-lg);
+}
+
+.summary-highlight {
+    font-size: var(--font-lg);
+    color: var(--primary-dark);
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-md);
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: var(--radius-sm);
+}

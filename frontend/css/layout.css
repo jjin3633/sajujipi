@@ -1,0 +1,131 @@
+/* 레이아웃 스타일 */
+.app-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: var(--spacing-sm);
+}
+
+.container {
+    background-color: var(--bg-white);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    width: 100%;
+    max-width: 800px;
+}
+
+/* 헤더 */
+.header {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.header h1 {
+    color: var(--secondary-color);
+    margin-bottom: var(--spacing-xs);
+}
+
+.header p {
+    color: var(--text-secondary);
+    font-size: var(--font-md);
+}
+
+/* 메인 컨텐츠 */
+.main-content {
+    width: 100%;
+}
+
+/* 섹션 레이아웃 */
+.section {
+    margin-bottom: var(--spacing-lg);
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 2px solid var(--primary-light);
+}
+
+.section-title {
+    color: var(--secondary-color);
+    font-size: var(--font-xl);
+    margin: 0;
+}
+
+/* 그리드 시스템 */
+.grid {
+    display: grid;
+    gap: var(--spacing-md);
+}
+
+.grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* 반응형 그리드 */
+@media (max-width: 768px) {
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 플렉스 유틸리티 */
+.flex {
+    display: flex;
+}
+
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+/* 스크롤 영역 */
+.scroll-area {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: var(--spacing-xs);
+}
+
+.scroll-area::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scroll-area::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+}
+
+.scroll-area::-webkit-scrollbar-thumb {
+    background: var(--border-medium);
+    border-radius: var(--radius-sm);
+}
+
+.scroll-area::-webkit-scrollbar-thumb:hover {
+    background: var(--text-light);
+}

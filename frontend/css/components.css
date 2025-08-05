@@ -1,0 +1,234 @@
+/* 컴포넌트 스타일 */
+
+/* 카드 */
+.card {
+    background-color: var(--bg-white);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.card-title {
+    color: var(--secondary-color);
+    font-size: var(--font-lg);
+    margin-bottom: var(--spacing-sm);
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.card-content {
+    color: var(--text-primary);
+    line-height: 1.8;
+}
+
+.card-image {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+/* 이미지 카드 */
+.image-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.image-card .card-image {
+    transition: transform 0.3s ease;
+}
+
+.image-card:hover .card-image {
+    transform: scale(1.05);
+}
+
+/* 버튼 */
+.btn {
+    display: inline-block;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-base);
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-medium);
+}
+
+.btn-secondary:hover {
+    background-color: var(--border-light);
+}
+
+.btn-large {
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: var(--font-lg);
+}
+
+.btn-block {
+    display: block;
+    width: 100%;
+}
+
+/* 입력 필드 */
+.form-group {
+    margin-bottom: var(--spacing-md);
+}
+
+.form-label {
+    display: block;
+    margin-bottom: var(--spacing-xs);
+    color: var(--text-secondary);
+    font-size: var(--font-sm);
+    font-weight: 600;
+}
+
+.form-input {
+    width: 100%;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-base);
+    transition: border-color 0.3s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.1);
+}
+
+/* 로딩 스피너 */
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-lg);
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--border-light);
+    border-top-color: var(--primary-color);
+    border-radius: var(--radius-full);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-spinner p {
+    margin-top: var(--spacing-md);
+    color: var(--text-secondary);
+}
+
+/* 에러 메시지 */
+.error-message {
+    background-color: #ffebee;
+    border: 1px solid #ffcdd2;
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-md);
+    color: #c62828;
+}
+
+.error-detail {
+    font-size: var(--font-sm);
+    color: #d32f2f;
+    margin-top: var(--spacing-xs);
+}
+
+/* 배지 */
+.badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: var(--font-xs);
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    background-color: var(--primary-light);
+    color: var(--primary-dark);
+}
+
+.badge-success {
+    background-color: #c8e6c9;
+    color: #2e7d32;
+}
+
+.badge-warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.badge-danger {
+    background-color: #ffcdd2;
+    color: #c62828;
+}
+
+/* 진행 바 */
+.progress {
+    width: 100%;
+    height: 8px;
+    background-color: var(--border-light);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: var(--primary-color);
+    transition: width 0.3s ease;
+}
+
+/* 툴팁 */
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip-text {
+    visibility: hidden;
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-sm);
+    white-space: nowrap;
+    z-index: 1;
+}
+
+.tooltip:hover .tooltip-text {
+    visibility: visible;
+}

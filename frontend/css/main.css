@@ -1,0 +1,137 @@
+/* 메인 CSS - 모든 스타일 통합 */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;600;700&display=swap');
+
+/* CSS 모듈 임포트 */
+@import 'base.css';
+@import 'layout.css';
+@import 'components.css';
+@import 'analysis.css';
+@import 'responsive.css';
+
+/* 앱 전용 스타일 */
+.saju-app {
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* 입력 폼 스타일 */
+.birth-input-form {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-lg);
+}
+
+.birth-input-form input {
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-sm);
+    text-align: center;
+}
+
+.birth-input-form input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.1);
+}
+
+#analyze-btn {
+    grid-column: 1 / -1;
+    margin-top: var(--spacing-sm);
+}
+
+/* 상태 메시지 */
+#status {
+    margin-top: var(--spacing-md);
+    min-height: 60px;
+}
+
+/* 분석 결과 컨테이너 */
+#analysis-results {
+    margin-top: var(--spacing-lg);
+}
+
+/* 섹션별 스타일 오버라이드 */
+#ilju-analysis .card {
+    background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+}
+
+#sipsung-analysis .card {
+    background: linear-gradient(135deg, #f5f5ff 0%, #ffffff 100%);
+}
+
+#sibiunseong-analysis .card {
+    background: linear-gradient(135deg, #f5fff5 0%, #ffffff 100%);
+}
+
+#career-analysis .card {
+    background: linear-gradient(135deg, #fffaf5 0%, #ffffff 100%);
+}
+
+#love-analysis .card {
+    background: linear-gradient(135deg, #fff0f5 0%, #ffffff 100%);
+}
+
+#wealth-analysis .card {
+    background: linear-gradient(135deg, #f5fffa 0%, #ffffff 100%);
+}
+
+/* 애니메이션 지연 */
+.analysis-section:nth-child(1) { animation-delay: 0.1s; }
+.analysis-section:nth-child(2) { animation-delay: 0.2s; }
+.analysis-section:nth-child(3) { animation-delay: 0.3s; }
+.analysis-section:nth-child(4) { animation-delay: 0.4s; }
+.analysis-section:nth-child(5) { animation-delay: 0.5s; }
+.analysis-section:nth-child(6) { animation-delay: 0.6s; }
+.analysis-section:nth-child(7) { animation-delay: 0.7s; }
+.analysis-section:nth-child(8) { animation-delay: 0.8s; }
+.analysis-section:nth-child(9) { animation-delay: 0.9s; }
+
+/* 데이터 없음 표시 */
+.no-data {
+    text-align: center;
+    color: var(--text-light);
+    padding: var(--spacing-lg);
+    font-style: italic;
+}
+
+/* 스크롤 표시기 */
+.scroll-indicator {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    box-shadow: var(--shadow-md);
+}
+
+.scroll-indicator.visible {
+    opacity: 1;
+}
+
+.scroll-indicator:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+/* 포커스 가시성 향상 */
+:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* 선택 영역 스타일 */
+::selection {
+    background-color: var(--primary-light);
+    color: var(--primary-dark);
+}

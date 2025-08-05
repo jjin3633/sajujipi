@@ -3,118 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>사주팔자 AI 분석</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>사주지피 - AI 사주팔자 분석</title>
+    <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
-    <div class="container">
-        <h1>사주팔자 AI 역술가</h1>
-        <p>당신의 운명을 알려드립니다. 생년월일과 태어난 시간을 입력해주세요.</p>
-        <div class="input-form">
-            <input type="number" id="year" placeholder="태어난 연도 (예: 1996)">
-            <input type="number" id="month" placeholder="월">
-            <input type="number" id="day" placeholder="일">
-            <input type="number" id="hour" placeholder="시 (0-23)">
-            <input type="number" id="minute" placeholder="분">
-            <button onclick="getAnalysis()">분석 요청</button>
-        </div>
-        
-        <div id="result" class="result-card">
-            <div id="status-message">결과가 여기에 표시됩니다.</div>
+    <div class="app-container">
+        <div class="container">
+            <!-- 헤더 -->
+            <header class="header">
+                <h1>사주지피</h1>
+                <p>AI가 분석하는 당신의 사주팔자</p>
+            </header>
 
-            <!-- 1. 일주 분석 결과 -->
-            <div id="ilju-analysis-section" class="analysis-section">
-                <h2>일주 분석</h2>
-                <div id="ilju-illustration-container" class="illustration-container"></div>
-                <div id="ilju-personality-container"></div>
-                <div id="ilju-animal-container"></div>
-            </div>
+            <!-- 메인 컨텐츠 -->
+            <main class="main-content">
+                <!-- 입력 폼 -->
+                <section class="section">
+                    <form class="birth-input-form" onsubmit="return false;">
+                        <input type="number" id="year" placeholder="년도" min="1900" max="2100" required>
+                        <input type="number" id="month" placeholder="월" min="1" max="12" required>
+                        <input type="number" id="day" placeholder="일" min="1" max="31" required>
+                        <input type="number" id="hour" placeholder="시" min="0" max="23" required>
+                        <input type="number" id="minute" placeholder="분" min="0" max="59" required>
+                        <button type="button" id="analyze-btn" class="btn btn-primary btn-large btn-block">
+                            사주 분석하기
+                        </button>
+                    </form>
+                    
+                    <!-- 상태 메시지 -->
+                    <div id="status"></div>
+                </section>
 
-            <!-- 2. 십성 분석 결과 -->
-            <div id="sipsung-analysis-section" class="analysis-section">
-                <h2>십성 분석</h2>
-                <div id="sipsung-period-analysis"></div>
-                <div id="sipsung-comprehensive-analysis"></div>
-            </div>
-
-            <!-- 3. 십이운성 분석 결과 -->
-            <div id="sibiunseong-analysis-section" class="analysis-section">
-                <h2>십이운성 분석</h2>
-                <div id="sibiunseong-period-analysis"></div>
-                <div id="sibiunseong-comprehensive-analysis"></div>
-                <div id="sibiunseong-illustration-container" class="illustration-container"></div>
-            </div>
-
-            <!-- 4. 십이신살 분석 결과 -->
-            <div id="sibisinsal-analysis-section" class="analysis-section">
-                <h2>십이신살 분석</h2>
-                <div id="sibisinsal-period-analysis"></div>
-            </div>
-
-            <!-- 5. 귀인 분석 결과 -->
-            <div id="guin-analysis-section" class="analysis-section">
-                <h2>귀인 분석</h2>
-                <div id="guin-period-analysis"></div>
-                <div id="guin-comprehensive-analysis"></div>
-                <div id="guin-portrait-container" class="illustration-container"></div>
-            </div>
-
-            <!-- 6. 재물운 분석 결과 -->
-            <div id="wealth-luck-analysis-section" class="analysis-section">
-                <h2>재물운 분석</h2>
-                <div id="wealth-overall-flow"></div>
-                <div id="wealth-characteristics"></div>
-                <div id="wealth-people-analysis"></div>
-                <div id="wealth-business-analysis"></div>
-                <div id="wealth-graph-container" class="graph-container"></div>
-            </div>
-
-            <!-- 7. 연애운 & 결혼운 분석 결과 -->
-            <div id="love-luck-analysis-section" class="analysis-section">
-                <h2>연애운 & 결혼운 분석</h2>
-                <div id="love-overall-tendency"></div>
-                <div id="love-destiny-partner"></div>
-                <div id="love-improvement-points"></div>
-                <div id="love-flow-analysis"></div>
-                <div id="love-timing-location"></div>
-                <div id="love-destiny-portrait-container" class="illustration-container"></div>
-            </div>
-
-            <!-- 8. 직업운 분석 결과 -->
-            <div id="career-luck-analysis-section" class="analysis-section">
-                <h2>직업운 분석</h2>
-                <div id="career-suitable-jobs"></div>
-                <div id="career-business-vs-job"></div>
-                <div id="career-advice"></div>
-                <div id="career-caution-people"></div>
-            </div>
-
-            <!-- 9. 건강운 분석 결과 -->
-            <div id="health-luck-analysis-section" class="analysis-section">
-                <h2>건강운 분석</h2>
-                <div id="health-constitution"></div>
-                <div id="health-risk-areas"></div>
-                <div id="health-suitable-exercise"></div>
-                <div id="health-timing-analysis"></div>
-            </div>
-
-            <!-- 10. 대운 분석 결과 -->
-            <div id="daeun-analysis-section" class="analysis-section">
-                <h2>대운 분석</h2>
-                <div id="daeun-90-years"></div>
-                <div id="daeun-5-years-future"></div>
-                <div id="daeun-samjae-analysis"></div>
-            </div>
-
-            <!-- 11. 종합 리포트 -->
-            <div id="comprehensive-report-section" class="analysis-section">
-                <h2>종합 리포트</h2>
-                <div id="comprehensive-summary"></div>
-                <div id="comprehensive-recommendations"></div>
-                <div id="comprehensive-future-outlook"></div>
-            </div>
+                <!-- 분석 결과 -->
+                <div id="analysis-results">
+                    <!-- 일주 분석 -->
+                    <section id="ilju-analysis" class="analysis-section" style="display: none;"></section>
+                    
+                    <!-- 십성 분석 -->
+                    <section id="sipsung-analysis" class="analysis-section" style="display: none;"></section>
+                    
+                    <!-- 십이운성 분석 -->
+                    <section id="sibiunseong-analysis" class="analysis-section" style="display: none;"></section>
+                    
+                    <!-- 십이신살 분석 -->
+                    <section id="sibisinsal-analysis" class="analysis-section" style="display: none;"></section>
+                    
+                    <!-- 귀인 분석 -->
+                    <section id="guin-analysis" class="analysis-section" style="display: none;"></section>
+                    
+                    <!-- 재물운 분석 -->
+                    <section id="wealth-analysis" class="analysis-section" style="display: none;"></section>
+                    
+                    <!-- 연애운 분석 -->
+                    <section id="love-analysis" class="analysis-section" style="display: none;"></section>
+                    
+                    <!-- 직업운 분석 -->
+                    <section id="career-analysis" class="analysis-section" style="display: none;"></section>
+                    
+                    <!-- 건강운 분석 -->
+                    <section id="health-analysis" class="analysis-section" style="display: none;"></section>
+                    
+                    <!-- 대운 분석 -->
+                    <section id="daeun-analysis" class="analysis-section" style="display: none;"></section>
+                    
+                    <!-- 종합 리포트 -->
+                    <section id="comprehensive-report" class="analysis-section" style="display: none;"></section>
+                </div>
+            </main>
         </div>
     </div>
-    <script src="script.js"></script>
+
+    <!-- 스크롤 표시기 -->
+    <div class="scroll-indicator" id="scroll-top" style="display: none;">
+        <span>↑</span>
+    </div>
+
+    <!-- JavaScript 모듈 -->
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>

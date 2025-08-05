@@ -1,0 +1,248 @@
+/* 반응형 디자인 */
+
+/* 태블릿 (768px 이하) */
+@media (max-width: 768px) {
+    /* 기본 레이아웃 조정 */
+    .container {
+        max-width: 100%;
+        padding: var(--spacing-sm);
+    }
+    
+    /* 폰트 크기 조정 */
+    :root {
+        --font-3xl: 2em;
+        --font-2xl: 1.5em;
+        --font-xl: 1.25em;
+    }
+    
+    /* 그리드 조정 */
+    .grid-2,
+    .grid-3,
+    .grid-4,
+    .sipsung-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    /* 입력 폼 조정 */
+    .input-form {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+    }
+    
+    .input-form input {
+        height: 45px;
+    }
+    
+    .input-form button {
+        margin-top: var(--spacing-sm);
+    }
+    
+    /* 분석 섹션 조정 */
+    .analysis-section {
+        padding: var(--spacing-sm);
+    }
+    
+    /* 재물운 지표 조정 */
+    .wealth-indicators {
+        grid-template-columns: 1fr;
+    }
+    
+    /* 건강 상태 조정 */
+    .health-status {
+        grid-template-columns: 1fr;
+    }
+    
+    /* 연애운 호환성 조정 */
+    .love-compatibility {
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+    
+    /* 대운 타임라인 조정 */
+    .daeun-timeline {
+        padding-left: var(--spacing-md);
+    }
+}
+
+/* 모바일 (480px 이하) */
+@media (max-width: 480px) {
+    /* 앱 컨테이너 조정 */
+    .app-container {
+        padding: 0;
+    }
+    
+    .container {
+        border-radius: 0;
+        box-shadow: none;
+    }
+    
+    /* 헤더 조정 */
+    .header h1 {
+        font-size: var(--font-2xl);
+    }
+    
+    .header p {
+        font-size: var(--font-base);
+    }
+    
+    /* 카드 조정 */
+    .card {
+        padding: var(--spacing-sm);
+        margin-bottom: var(--spacing-sm);
+    }
+    
+    .card-title {
+        font-size: var(--font-md);
+    }
+    
+    /* 버튼 조정 */
+    .btn {
+        font-size: var(--font-base);
+        padding: var(--spacing-sm);
+    }
+    
+    /* 십성 그리드 조정 */
+    .sipsung-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    /* 십이운성 차트 조정 */
+    .sibiunseong-chart {
+        height: 150px;
+    }
+    
+    .sibiunseong-label {
+        font-size: var(--font-xs);
+    }
+    
+    /* 직업 추천 태그 조정 */
+    .career-recommendations {
+        justify-content: center;
+    }
+    
+    .career-tag {
+        font-size: var(--font-xs);
+        padding: 4px var(--spacing-sm);
+    }
+    
+    /* 스크롤 영역 조정 */
+    .scroll-area {
+        max-height: 70vh;
+    }
+    
+    /* 이미지 크기 조정 */
+    .card-image {
+        max-height: 200px;
+    }
+    
+    .love-avatar {
+        width: 80px;
+        height: 80px;
+    }
+    
+    /* 간격 조정 */
+    .section {
+        margin-bottom: var(--spacing-md);
+    }
+    
+    /* 종합 요약 조정 */
+    .comprehensive-summary {
+        padding: var(--spacing-md);
+    }
+    
+    .summary-highlight {
+        font-size: var(--font-base);
+        padding: var(--spacing-sm);
+    }
+}
+
+/* 작은 모바일 (360px 이하) */
+@media (max-width: 360px) {
+    /* 최소 폰트 크기 보장 */
+    body {
+        font-size: 14px;
+    }
+    
+    /* 입력 필드 조정 */
+    .form-input {
+        font-size: 16px; /* iOS 줌 방지 */
+    }
+    
+    /* 버튼 높이 조정 */
+    .btn {
+        min-height: 44px; /* 터치 타겟 최소 크기 */
+    }
+    
+    /* 카드 패딩 추가 조정 */
+    .card {
+        padding: var(--spacing-xs);
+    }
+}
+
+/* 프린트 스타일 */
+@media print {
+    /* 불필요한 요소 숨기기 */
+    .header p,
+    .input-form,
+    button,
+    .loading-spinner {
+        display: none !important;
+    }
+    
+    /* 배경색 제거 */
+    body {
+        background-color: white;
+    }
+    
+    .container {
+        box-shadow: none;
+        max-width: 100%;
+    }
+    
+    /* 페이지 나누기 */
+    .analysis-section {
+        page-break-inside: avoid;
+    }
+    
+    /* 색상 조정 */
+    * {
+        color: black !important;
+        background-color: white !important;
+    }
+    
+    /* 링크 표시 */
+    a::after {
+        content: " (" attr(href) ")";
+    }
+}
+
+/* 다크 모드 지원 */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-primary: #121212;
+        --bg-secondary: #1e1e1e;
+        --bg-white: #2a2a2a;
+        --text-primary: #e0e0e0;
+        --text-secondary: #b0b0b0;
+        --border-light: #3a3a3a;
+        --border-medium: #4a4a4a;
+    }
+    
+    .card {
+        background-color: var(--bg-white);
+    }
+    
+    .analysis-card {
+        background: linear-gradient(135deg, var(--bg-white) 0%, var(--bg-secondary) 100%);
+    }
+}
+
+/* 고해상도 디스플레이 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    /* 더 선명한 테두리 */
+    .card,
+    .btn,
+    .form-input {
+        border-width: 0.5px;
+    }
+}
