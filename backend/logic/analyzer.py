@@ -237,15 +237,14 @@ def perform_enhanced_analysis(pillars_char: Dict[str, str], basic_results: Dict[
     career_enhanced = enhance_career_analysis(sipsung_result)
     health_enhanced = enhance_health_analysis(sipsung_result, pillars_char)
     
-    # 대운 분석
-    life_flow = analyze_life_flow(
-        year, 
-        month, 
-        day, 
-        hour, 
-        minute, 
-        sipsung_result
-    )
+    # 대운 분석 - 원래 날짜 정보를 사용할 수 없으므로 간단한 분석만 수행
+    life_flow = {
+        "current_age": 0,
+        "daeun_periods": [],
+        "seun_periods": [],
+        "change_points": [],
+        "future_outlook": "대운 분석을 위해서는 원래 날짜 정보가 필요합니다."
+    }
     
     return {
         "wealth_luck_analysis": {**wealth_luck, **wealth_enhanced},
