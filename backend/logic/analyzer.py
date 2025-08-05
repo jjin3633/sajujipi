@@ -262,7 +262,7 @@ def perform_enhanced_analysis(pillars_char: Dict[str, str], basic_results: Dict[
     final_result = {
         "wealth_luck_analysis": {**wealth_luck, **wealth_enhanced},
         "love_luck_analysis": {**love_luck, **love_enhanced},
-        "career_luck_analysis": {**career_luck, **career_enhanced},
+        "career_luck_analysis": {**career_enhanced, **career_luck},
         "health_luck_analysis": {**health_luck, **health_enhanced},
         "life_flow_analysis": life_flow,
         "comprehensive_report": generate_comprehensive_report_detailed(pillars_char, basic_results, life_flow)
@@ -312,10 +312,7 @@ def analyze_career_luck(sipsung_result):
             avatar_prompt = "A professional manager in formal business attire, organizing documents, with structured approach, reliable and organized, anime style"
     
     # AI 아바타 생성
-    try:
-        avatar_url = generate_ai_avatar(avatar_prompt)
-    except:
-        avatar_url = None
+    avatar_url = generate_ai_avatar(avatar_prompt)
     
     return {
         "title": career_style,
@@ -325,18 +322,8 @@ def analyze_career_luck(sipsung_result):
 
 def generate_ai_avatar(prompt):
     """AI 아바타 생성 함수 - 배포 환경 안정성을 위해 수정"""
-    try:
-        # 배포 환경에서는 AI 이미지 생성이 불가능할 수 있으므로 기본값 반환
-        if not prompt:
-            return None
-            
-        # 실제 AI API 호출 대신 기본 이미지 URL 반환 (배포 환경 안정성)
-        # 실제 운영에서는 여기에 AI API 키와 호출 로직을 추가
-        return None
-        
-    except Exception as e:
-        print(f"AI avatar generation failed: {str(e)}")
-        return None
+    # safe_ai_generation 함수를 사용하여 placeholder URL 반환
+    return safe_ai_generation("avatar", prompt)
 
 def analyze_love_luck(sipsung_result):
     """십성 데이터를 기반으로 연애운을 분석하고 AI 일러스트를 생성합니다."""
@@ -970,6 +957,7 @@ def generate_comprehensive_report_detailed(pillars_char: Dict[str, str], basic_r
         "ilju_analysis": ilju_analysis,
         "sipsung_analysis": sipsung_analysis,
         "sibiunseong_analysis": sibiunseong_analysis,
+        "sibiunseong_illustration_url": sibiunseong_analysis.get("illustration_url"),
         "sibisinsal_analysis": sibisinsal_analysis,
         "guin_analysis": guin_analysis,
         "wealth_analysis": wealth_analysis,
