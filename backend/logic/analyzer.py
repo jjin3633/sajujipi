@@ -42,10 +42,20 @@ _DATA_CACHE = {}
 def safe_load_json(file_path: str, default: Dict = None) -> Dict:
     """안전하게 JSON 파일을 로드합니다."""
     try:
+        print(f"파일 로딩 시도: {file_path}")
+        if not os.path.exists(file_path):
+            print(f"파일이 존재하지 않음: {file_path}")
+            return default or {}
+        
         with open(file_path, 'r', encoding='utf-8') as f:
-            return json.load(f)
+            data = json.load(f)
+            print(f"파일 로딩 성공: {file_path}")
+            return data
     except (FileNotFoundError, json.JSONDecodeError) as e:
         print(f"데이터 로딩 오류 ({file_path}): {e}")
+        return default or {}
+    except Exception as e:
+        print(f"예상치 못한 오류 ({file_path}): {e}")
         return default or {}
 
 @lru_cache(maxsize=128)
@@ -155,6 +165,8 @@ def calculate_saju_pillars(year: int, month: int, day: int, hour: int, minute: i
         hour_ji = JIJI[hour_ji_idx]
         hour_gan = calculate_hour_gan(day_gan, hour_ji_idx)
         
+        print(f"사주 계산 결과: {year_gan}{year_ji} {month_gan}{month_ji} {day_gan}{JIJI[day_ji_idx]} {hour_gan}{hour_ji}")
+        
         return {
             'year_gan': year_gan, 'year_ji': year_ji,
             'month_gan': month_gan, 'month_ji': month_ji,
@@ -163,6 +175,9 @@ def calculate_saju_pillars(year: int, month: int, day: int, hour: int, minute: i
         }
         
     except Exception as e:
+        print(f"사주 계산 중 오류: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return create_error_response(f"사주 계산 오류: {str(e)}")
 
 def calculate_month_gan(year_gan: str, month_ji: str) -> str:
