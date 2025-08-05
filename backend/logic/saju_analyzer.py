@@ -47,10 +47,10 @@ class SajuAnalyzer:
                 'sibiunseong_analysis': self.sibiunseong_analyzer.analyze(saju_pillars),
                 'sibisinsal_analysis': self.sibisinsal_analyzer.analyze(saju_pillars),
                 'guin_analysis': self.guin_analyzer.analyze(saju_pillars),
-                'wealth_analysis': self.wealth_analyzer.analyze(saju_pillars, sipsung_data),
-                'love_analysis': self.love_analyzer.analyze(saju_pillars, sipsung_data),
-                'career_analysis': self.career_analyzer.analyze(saju_pillars, sipsung_data),
-                'health_analysis': self.health_analyzer.analyze(saju_pillars),
+                'wealth_luck_analysis': self.wealth_analyzer.analyze(saju_pillars, sipsung_data),
+                'love_luck_analysis': self.love_analyzer.analyze(saju_pillars, sipsung_data),
+                'career_luck_analysis': self.career_analyzer.analyze(saju_pillars, sipsung_data),
+                'health_luck_analysis': self.health_analyzer.analyze(saju_pillars, sipsung_data),
                 'daeun_analysis': self.daeun_analyzer.analyze(year, month, day, saju_pillars)
             }
             
