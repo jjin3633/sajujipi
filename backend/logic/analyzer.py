@@ -239,11 +239,11 @@ def perform_enhanced_analysis(pillars_char: Dict[str, str], basic_results: Dict[
     
     # 대운 분석
     life_flow = analyze_life_flow(
-        int(pillars_char.get('year_gan', 0)), 
-        int(pillars_char.get('month_gan', 0)), 
-        int(pillars_char.get('day_gan', 0)), 
-        int(pillars_char.get('hour_gan', 0)), 
-        0, 
+        year, 
+        month, 
+        day, 
+        hour, 
+        minute, 
         sipsung_result
     )
     
