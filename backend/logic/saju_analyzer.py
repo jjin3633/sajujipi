@@ -55,9 +55,7 @@ class SajuAnalyzer:
             }
             
             # 4. 종합 리포트 생성
-            comprehensive_report = self.report_generator.generate_comprehensive_report(
-                analysis_results, year, month, day, hour, minute
-            )
+            comprehensive_report = self.report_generator.generate_comprehensive_report(analysis_results)
             
             return {
                 **analysis_results,
