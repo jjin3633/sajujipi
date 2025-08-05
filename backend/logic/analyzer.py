@@ -86,11 +86,11 @@ def safe_ai_generation(func_name: str, prompt: str) -> Optional[str]:
 def get_saju_details(year: int, month: int, day: int, hour: int, minute: int) -> Dict[str, Any]:
     """사주 분석의 메인 함수 - 최적화된 버전"""
     
-    # 입력값 검증
-    if not validate_date_input(year, month, day, hour, minute):
-        return create_error_response("유효하지 않은 날짜/시간 입력입니다.")
-    
     try:
+        # 입력값 검증
+        if not validate_date_input(year, month, day, hour, minute):
+            return create_error_response("유효하지 않은 날짜/시간 입력입니다.")
+        
         # 사주 계산
         pillars_char = calculate_saju_pillars(year, month, day, hour, minute)
         if "error" in pillars_char:
@@ -98,35 +98,31 @@ def get_saju_details(year: int, month: int, day: int, hour: int, minute: int) ->
         
         # 기본 분석 수행
         analysis_results = perform_basic_analysis(pillars_char)
+        if "error" in analysis_results:
+            return analysis_results
         
-        # 확장 분석 수행
+        # 고급 분석 수행
         enhanced_results = perform_enhanced_analysis(pillars_char, analysis_results)
+        if "error" in enhanced_results:
+            return enhanced_results
         
-        # AI 이미지 생성
+        # AI 이미지 생성 (배포 환경에서는 비활성화)
         ai_results = generate_ai_images(pillars_char)
         
-        # 종합 리포트 생성
-        comprehensive_report = generate_comprehensive_report(enhanced_results)
-        
-        # 일주 분석 데이터 가져오기
-        ilju_analysis_data = get_ilju_analysis_data(f"{pillars_char['day_gan']}{pillars_char['day_ji']}")
-        
-        # 결과 통합
-        return {
-            "year_pillar": f"{pillars_char['year_gan']}{pillars_char['year_ji']}",
-            "month_pillar": f"{pillars_char['month_gan']}{pillars_char['month_ji']}",
-            "day_pillar": f"{pillars_char['day_gan']}{pillars_char['day_ji']}",
-            "hour_pillar": f"{pillars_char['hour_gan']}{pillars_char['hour_ji']}",
+        # 최종 결과 조합
+        final_result = {
             **analysis_results,
             **enhanced_results,
-            **ai_results,
-            "comprehensive_report": comprehensive_report,
-            "ilju_analysis": ilju_analysis_data
+            **ai_results
         }
+        
+        return final_result
         
     except Exception as e:
         print(f"사주 분석 중 오류 발생: {str(e)}")
-        return create_error_response("분석 중 오류가 발생했습니다.", "analysis_error")
+        import traceback
+        traceback.print_exc()
+        return create_error_response(f"분석 중 오류가 발생했습니다: {str(e)}")
 
 def calculate_saju_pillars(year: int, month: int, day: int, hour: int, minute: int) -> Dict[str, str]:
     """사주 사주를 계산합니다."""

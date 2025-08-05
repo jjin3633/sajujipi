@@ -22,12 +22,16 @@ def get_analysis():
         birth_data_json = request.get_json()
         
         if not birth_data_json:
+            print("오류: JSON 데이터가 없습니다.")
             return jsonify({"status": "error", "message": "Invalid JSON data"}), 400
+        
+        print(f"받은 데이터: {birth_data_json}")
         
         # 필수 필드 검증
         required_fields = ['year', 'month', 'day', 'hour', 'minute']
         for field in required_fields:
             if field not in birth_data_json:
+                print(f"오류: 필수 필드 누락: {field}")
                 return jsonify({"status": "error", "message": f"Missing required field: {field}"}), 400
         
         # 데이터 타입 검증
@@ -37,18 +41,25 @@ def get_analysis():
             day = int(birth_data_json.get('day'))
             hour = int(birth_data_json.get('hour'))
             minute = int(birth_data_json.get('minute'))
-        except (ValueError, TypeError):
+        except (ValueError, TypeError) as e:
+            print(f"오류: 데이터 타입 변환 실패: {e}")
             return jsonify({"status": "error", "message": "Invalid data types. All fields must be integers."}), 400
         
         # 날짜 유효성 검증
         if not (1900 <= year <= 2100 and 1 <= month <= 12 and 1 <= day <= 31 and 0 <= hour <= 23 and 0 <= minute <= 59):
+            print(f"오류: 유효하지 않은 날짜/시간: {year}-{month}-{day} {hour}:{minute}")
             return jsonify({"status": "error", "message": "Invalid date/time values"}), 400
+        
+        print(f"분석 시작: {year}-{month}-{day} {hour}:{minute}")
         
         # 사주 분석 실행
         analysis_result = get_saju_details(year, month, day, hour, minute)
         
+        print(f"분석 결과: {analysis_result}")
+        
         # 분석 결과 검증
         if not analysis_result or "error" in analysis_result:
+            print(f"오류: 분석 실패 - {analysis_result}")
             return jsonify({"status": "error", "message": "Analysis failed"}), 500
         
         return jsonify({
@@ -59,7 +70,7 @@ def get_analysis():
         
     except Exception as e:
         # 로그 출력
-        print(f"Error in analysis endpoint: {str(e)}")
+        print(f"분석 엔드포인트 오류: {str(e)}")
         traceback.print_exc()
         
         # 클라이언트에게 일반적인 오류 메시지 반환
