@@ -5,7 +5,11 @@ import traceback
 import os
 
 app = Flask(__name__)
-CORS(app)
+# CORS 설정을 더 구체적으로 지정
+CORS(app, 
+     resources={r"/*": {"origins": ["https://sajujipi-frontend.onrender.com", "http://localhost:*", "*"]}},
+     allow_headers=["Content-Type", "Authorization"],
+     methods=["GET", "POST", "OPTIONS"])
 
 @app.route("/")
 def read_root():
@@ -35,15 +39,25 @@ def test_endpoint():
             "message": f"테스트 실패: {str(e)}"
         }), 500
 
-@app.route("/analysis", methods=["POST"])
+@app.route("/analysis", methods=["POST", "OPTIONS"])
 def get_analysis():
+    # OPTIONS 요청 처리 (preflight)
+    if request.method == "OPTIONS":
+        response = jsonify({"status": "ok"})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+        response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
+        return response
     try:
         # 요청 데이터 파싱
         birth_data_json = request.get_json()
         
         if not birth_data_json:
             print("오류: JSON 데이터가 없습니다.")
-            return jsonify({"status": "error", "message": "Invalid JSON data"}), 400
+            response = jsonify({"status": "error", "message": "Invalid JSON data"})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+            return response, 400
         
         print(f"받은 데이터: {birth_data_json}")
         
@@ -52,7 +66,10 @@ def get_analysis():
         for field in required_fields:
             if field not in birth_data_json:
                 print(f"오류: 필수 필드 누락: {field}")
-                return jsonify({"status": "error", "message": f"Missing required field: {field}"}), 400
+                response = jsonify({"status": "error", "message": f"Missing required field: {field}"})
+                response.headers.add("Access-Control-Allow-Origin", "*")
+                response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+                return response, 400
         
         # 데이터 타입 검증
         try:
@@ -63,12 +80,18 @@ def get_analysis():
             minute = int(birth_data_json.get('minute'))
         except (ValueError, TypeError) as e:
             print(f"오류: 데이터 타입 변환 실패: {e}")
-            return jsonify({"status": "error", "message": "Invalid data types. All fields must be integers."}), 400
+            response = jsonify({"status": "error", "message": "Invalid data types. All fields must be integers."})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+            return response, 400
         
         # 날짜 유효성 검증
         if not (1900 <= year <= 2100 and 1 <= month <= 12 and 1 <= day <= 31 and 0 <= hour <= 23 and 0 <= minute <= 59):
             print(f"오류: 유효하지 않은 날짜/시간: {year}-{month}-{day} {hour}:{minute}")
-            return jsonify({"status": "error", "message": "Invalid date/time values"}), 400
+            response = jsonify({"status": "error", "message": "Invalid date/time values"})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+            return response, 400
         
         print(f"분석 시작: {year}-{month}-{day} {hour}:{minute}")
         
@@ -80,13 +103,21 @@ def get_analysis():
         # 분석 결과 검증
         if not analysis_result or "error" in analysis_result:
             print(f"오류: 분석 실패 - {analysis_result}")
-            return jsonify({"status": "error", "message": "Analysis failed"}), 500
+            response = jsonify({"status": "error", "message": "Analysis failed"})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+            return response, 500
         
-        return jsonify({
+        response = jsonify({
             "status": "success",
             "request_data": birth_data_json,
             "analysis_result": analysis_result
         })
+        
+        # 응답에도 CORS 헤더 추가
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+        return response
         
     except Exception as e:
         # 로그 출력
@@ -94,10 +125,13 @@ def get_analysis():
         traceback.print_exc()
         
         # 클라이언트에게 일반적인 오류 메시지 반환
-        return jsonify({
+        response = jsonify({
             "status": "error",
             "message": "분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
-        }), 500
+        })
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+        return response, 500
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
