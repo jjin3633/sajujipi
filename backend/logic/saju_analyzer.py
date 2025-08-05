@@ -51,7 +51,7 @@ class SajuAnalyzer:
                 'love_luck_analysis': self.love_analyzer.analyze(saju_pillars, sipsung_data),
                 'career_luck_analysis': self.career_analyzer.analyze(saju_pillars, sipsung_data),
                 'health_luck_analysis': self.health_analyzer.analyze(saju_pillars, sipsung_data),
-                'daeun_analysis': self.daeun_analyzer.analyze(year, month, day, saju_pillars)
+                'daeun_analysis': self.daeun_analyzer.analyze(saju_pillars, year)
             }
             
             # 4. 종합 리포트 생성
