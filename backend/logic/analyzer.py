@@ -87,8 +87,17 @@ def safe_ai_generation(func_name: str, prompt: str) -> Optional[str]:
     try:
         if not prompt:
             return None
-        # 배포 환경에서는 AI 이미지 생성이 비활성화됨
-        return None
+        
+        # 배포 환경에서는 AI 이미지 생성이 비활성화되므로 placeholder URL 반환
+        if func_name == "illustration":
+            return "https://via.placeholder.com/400x300/4A90E2/FFFFFF?text=사주+일러스트"
+        elif func_name == "portrait":
+            return "https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=사주+초상화"
+        elif func_name == "avatar":
+            return "https://via.placeholder.com/200x200/50C878/FFFFFF?text=사주+아바타"
+        else:
+            return "https://via.placeholder.com/400x300/9B59B6/FFFFFF?text=사주+이미지"
+            
     except Exception as e:
         print(f"AI {func_name} generation failed: {str(e)}")
         return None
@@ -112,7 +121,7 @@ def get_saju_details(year: int, month: int, day: int, hour: int, minute: int) ->
             return analysis_results
         
         # 고급 분석 수행
-        enhanced_results = perform_enhanced_analysis(pillars_char, analysis_results)
+        enhanced_results = perform_enhanced_analysis(pillars_char, analysis_results, year, month, day, hour, minute)
         if "error" in enhanced_results:
             return enhanced_results
         
@@ -221,7 +230,7 @@ def perform_basic_analysis(pillars_char: Dict[str, str]) -> Dict[str, Any]:
         "guin_analysis": analyze_guin(pillars_char)
     }
 
-def perform_enhanced_analysis(pillars_char: Dict[str, str], basic_results: Dict[str, Any]) -> Dict[str, Any]:
+def perform_enhanced_analysis(pillars_char: Dict[str, str], basic_results: Dict[str, Any], year: int = None, month: int = None, day: int = None, hour: int = None, minute: int = None) -> Dict[str, Any]:
     """확장 분석을 수행합니다."""
     sipsung_result = basic_results["sipsung_raw"]
     
@@ -237,22 +246,29 @@ def perform_enhanced_analysis(pillars_char: Dict[str, str], basic_results: Dict[
     career_enhanced = enhance_career_analysis(sipsung_result)
     health_enhanced = enhance_health_analysis(sipsung_result, pillars_char)
     
-    # 대운 분석 - 원래 날짜 정보를 사용할 수 없으므로 간단한 분석만 수행
-    life_flow = {
-        "current_age": 0,
-        "daeun_periods": [],
-        "seun_periods": [],
-        "change_points": [],
-        "future_outlook": "대운 분석을 위해서는 원래 날짜 정보가 필요합니다."
-    }
+    # 대운 분석 - 날짜 정보가 있으면 정확한 분석 수행
+    if all([year, month, day, hour, minute]):
+        life_flow = analyze_life_flow(year, month, day, hour, minute, sipsung_result)
+    else:
+        life_flow = {
+            "current_age": 0,
+            "daeun_periods": [],
+            "seun_periods": [],
+            "change_points": [],
+            "future_outlook": "대운 분석을 위해서는 원래 날짜 정보가 필요합니다."
+        }
     
-    return {
+    # 종합 리포트 생성
+    final_result = {
         "wealth_luck_analysis": {**wealth_luck, **wealth_enhanced},
         "love_luck_analysis": {**love_luck, **love_enhanced},
         "career_luck_analysis": {**career_luck, **career_enhanced},
         "health_luck_analysis": {**health_luck, **health_enhanced},
-        "life_flow_analysis": life_flow
+        "life_flow_analysis": life_flow,
+        "comprehensive_report": generate_comprehensive_report_detailed(pillars_char, basic_results, life_flow)
     }
+    
+    return final_result
 
 def generate_ai_images(pillars_char: Dict[str, str]) -> Dict[str, Any]:
     """AI 이미지들을 생성합니다."""
@@ -914,145 +930,668 @@ def enhance_health_analysis(sipsung_result: Dict[str, str], pillars_char: Dict[s
         "timing_analysis": timing_analysis
     }
 
-def generate_comprehensive_report(data: Dict[str, Any]) -> Dict[str, str]:
-    """20년 역술가 수준의 전문적인 종합 리포트를 생성합니다."""
+def generate_comprehensive_report_detailed(pillars_char: Dict[str, str], basic_results: Dict[str, Any], life_flow: Dict[str, Any]) -> Dict[str, Any]:
+    """20년 역술가 수준의 상세한 종합 리포트를 생성합니다."""
     
-    # 기본 정보 추출
-    pillars_char = data.get('pillars_char', {})
-    ilju_analysis = data.get('ilju_analysis', {})
-    sipsung_analysis = data.get('sipsung_analysis', {})
-    sibiunseong_analysis = data.get('sibiunseong_analysis', {})
+    # 1. 일주 분석
+    ilju_analysis = generate_ilju_analysis_detailed(pillars_char)
     
-    # 일주 정보
-    ilju_key = f"{pillars_char.get('day_gan', '')}{pillars_char.get('day_ji', '')}"
-    ilju_info = ilju_analysis.get('description', '')
+    # 2. 십성 분석
+    sipsung_analysis = generate_sipsung_analysis_detailed(basic_results)
     
-    # 십성 정보
-    sipsung_summary = []
+    # 3. 십이운성 분석
+    sibiunseong_analysis = generate_sibiunseong_analysis_detailed(pillars_char, basic_results)
+    
+    # 4. 십이신살 분석
+    sibisinsal_analysis = generate_sibisinsal_analysis_detailed(pillars_char)
+    
+    # 5. 귀인 분석
+    guin_analysis = generate_guin_analysis_detailed(pillars_char)
+    
+    # 6. 재물운 분석
+    wealth_analysis = generate_wealth_analysis_detailed(basic_results)
+    
+    # 7. 연애운 & 결혼운 분석
+    love_analysis = generate_love_analysis_detailed(basic_results)
+    
+    # 8. 직업운 분석
+    career_analysis = generate_career_analysis_detailed(basic_results)
+    
+    # 9. 건강운 분석
+    health_analysis = generate_health_analysis_detailed(basic_results, pillars_char)
+    
+    # 10. 대운 분석
+    daeun_analysis = generate_daeun_analysis_detailed(life_flow)
+    
+    # 11. 종합 리포트
+    final_summary = generate_final_summary_detailed(pillars_char, basic_results, life_flow)
+    
+    return {
+        "ilju_analysis": ilju_analysis,
+        "sipsung_analysis": sipsung_analysis,
+        "sibiunseong_analysis": sibiunseong_analysis,
+        "sibisinsal_analysis": sibisinsal_analysis,
+        "guin_analysis": guin_analysis,
+        "wealth_analysis": wealth_analysis,
+        "love_analysis": love_analysis,
+        "career_analysis": career_analysis,
+        "health_analysis": health_analysis,
+        "daeun_analysis": daeun_analysis,
+        "final_summary": final_summary
+    }
+
+def generate_ilju_analysis_detailed(pillars_char: Dict[str, str]) -> Dict[str, Any]:
+    """일주 분석 - 상세 버전"""
+    day_gan = pillars_char.get('day_gan', '')
+    day_ji = pillars_char.get('day_ji', '')
+    ilju_key = f"{day_gan}{day_ji}"
+    
+    # 일주 일러스트 생성
+    ilju_illustration_prompt = f"Traditional Korean fortune telling illustration showing the day pillar (일주) with {day_gan} day master and {day_ji} earthly branch, mystical atmosphere, traditional Korean art style, detailed and colorful"
+    ilju_illustration_url = safe_ai_generation("illustration", ilju_illustration_prompt)
+    
+    # 일주 데이터 가져오기
+    ilju_data = get_cached_data('ilju')
+    ilju_info = ilju_data.get(ilju_key, {})
+    
+    # 성격 장단점
+    personality = ilju_info.get('personality', {'pros': [], 'cons': []})
+    
+    # 동물 특징
+    animal = ilju_info.get('animal', {'name': '', 'characteristics': []})
+    
+    analysis_text = f"""
+【일주 분석 - {ilju_key}】
+
+당신의 일주는 {day_gan}{day_ji}입니다. 이는 당신의 핵심 성격과 기질을 나타내는 가장 중요한 요소입니다.
+
+【일주 일러스트】
+{ilju_illustration_url if ilju_illustration_url else "일러스트 준비 중"}
+
+【내 성격 장단점】
+
+강점:
+{chr(10).join([f"• {pro}" for pro in personality.get('pros', [])])}
+
+주의사항:
+{chr(10).join([f"• {con}" for con in personality.get('cons', [])])}
+
+【내 일주 동물 특징】
+
+상징 동물: {animal.get('name', '')}
+동물적 특징:
+{chr(10).join([f"• {char}" for char in animal.get('characteristics', [])])}
+
+【전문가 해석】
+{ilju_info.get('description', '일주 분석을 통해 당신의 기본 성격과 기질을 파악할 수 있습니다.')}
+
+【인생에서의 영향】
+1. 기본 성격: 이 일주는 당신의 기본 성격을 형성하는 핵심 요소입니다.
+2. 대인관계: 일주의 특성에 따라 특정 유형의 사람들과 잘 어울리거나 갈등할 수 있습니다.
+3. 직업적 성향: 일주의 특성은 적합한 직업이나 활동 분야를 결정하는 중요한 요소입니다.
+4. 운세의 기반: 일주는 전체 운세의 기반이 되며, 다른 운세 요소들과 조화를 이룹니다.
+
+【전문가 조언】
+당신의 일주 특성을 잘 파악하고 긍정적 면모를 최대한 활용하는 것이 중요합니다. 
+특히 주의사항에 해당하는 부분들은 미리 대비하여 부정적 영향을 최소화하시기 바랍니다.
+"""
+    
+    return {
+        "title": f"일주 분석 - {ilju_key}",
+        "content": analysis_text.strip(),
+        "illustration_url": ilju_illustration_url,
+        "personality": personality,
+        "animal": animal
+    }
+
+def generate_sipsung_analysis_detailed(basic_results: Dict[str, Any]) -> Dict[str, Any]:
+    """십성 분석 - 상세 버전"""
+    sipsung_analysis = basic_results.get('sipsung_analysis', {})
+    
+    # 시기별 성향 분석
+    period_analysis = {}
     for period, analysis in sipsung_analysis.items():
         if period != '종합':
-            sipsung_summary.append(f"{period}: {analysis.split('십성은')[1].split('입니다')[0].strip()}")
+            period_analysis[period] = analysis
     
-    # 십이운성 정보
-    sibiunseong_summary = []
+    # 종합 성향 분석
+    comprehensive = sipsung_analysis.get('종합', '')
+    
+    analysis_text = f"""
+【십성 분석】
+
+십성은 사주에서 나타나는 열 가지 성격 유형으로, 당신의 성향과 특성을 나타냅니다.
+
+【시기별 성향 분석】
+
+초년기:
+{period_analysis.get('연간', '해당 시기의 십성 분석입니다.')}
+
+청년기:
+{period_analysis.get('월간', '해당 시기의 십성 분석입니다.')}
+
+중년기:
+{period_analysis.get('일간', '해당 시기의 십성 분석입니다.')}
+
+장년기:
+{period_analysis.get('시간', '해당 시기의 십성 분석입니다.')}
+
+【종합 성향 분석】
+
+{comprehensive}
+
+【전문가 해석】
+십성의 조합을 통해 당신의 성격적 특징, 대인관계, 직업적 성향, 운세의 흐름을 종합적으로 분석할 수 있습니다.
+
+【인생에서의 영향】
+1. 성격적 특징: 각 십성의 긍정적 면모들이 조화를 이루어 독특한 성격을 형성합니다.
+2. 대인관계: 십성의 조합에 따라 특정 유형의 사람들과 잘 어울리거나 갈등할 수 있습니다.
+3. 직업적 성향: 십성의 특성에 따라 적합한 직업이나 활동 분야가 결정됩니다.
+4. 운세의 흐름: 각 시기별 십성의 변화에 따라 운세의 흐름이 달라집니다.
+
+【전문가 조언】
+당신의 십성 조합을 고려할 때, 각 시기의 특성을 잘 파악하고 긍정적 면모를 최대한 활용하는 것이 중요합니다. 
+특히 주의사항에 해당하는 부분들은 미리 대비하여 부정적 영향을 최소화하시기 바랍니다.
+"""
+    
+    return {
+        "title": "십성 분석",
+        "content": analysis_text.strip(),
+        "period_analysis": period_analysis,
+        "comprehensive": comprehensive
+    }
+
+def generate_sibiunseong_analysis_detailed(pillars_char: Dict[str, str], basic_results: Dict[str, Any]) -> Dict[str, Any]:
+    """십이운성 분석 - 상세 버전"""
+    sibiunseong_analysis = basic_results.get('sibiunseong_analysis', {})
+    
+    # 시기별 십이운성 분석
+    period_analysis = {}
     for period, analysis in sibiunseong_analysis.items():
         if period != '종합':
-            sibiunseong_summary.append(f"{period}: {analysis.split('기운입니다')[0].split('시기는')[1].strip()}")
+            period_analysis[period] = analysis
     
-    comprehensive_summary = f"""
-【사주 종합 분석 리포트】
+    # 종합 십이운성 분석
+    comprehensive = sibiunseong_analysis.get('종합', '')
+    
+    # 십이운성 일러스트 생성
+    day_gan = pillars_char.get('day_gan', '')
+    sibiunseong_illustration_prompt = f"Traditional Korean fortune telling illustration showing the twelve fortunes (십이운성) with {day_gan} day master, mystical atmosphere, traditional Korean art style, detailed and colorful"
+    sibiunseong_illustration_url = safe_ai_generation("illustration", sibiunseong_illustration_prompt)
+    
+    analysis_text = f"""
+【십이운성 분석】
 
-당신의 사주를 20년 역술가의 관점에서 심층적으로 분석한 결과입니다.
+십이운성은 사주에서 나타나는 열두 가지 운세 유형으로, 인생의 각 시기별 운세를 나타냅니다.
 
-【기본 사주 정보】
-• 일주: {ilju_key} ({ilju_key[0]}{ilju_key[1]}일주)
+【시기별 십이운성 분석】
+
+초년기:
+{period_analysis.get('연간', '해당 시기의 십이운성 분석입니다.')}
+
+청년기:
+{period_analysis.get('월간', '해당 시기의 십이운성 분석입니다.')}
+
+중년기:
+{period_analysis.get('일간', '해당 시기의 십이운성 분석입니다.')}
+
+장년기:
+{period_analysis.get('시간', '해당 시기의 십이운성 분석입니다.')}
+
+【종합 십이운성 분석】
+
+{comprehensive}
+
+【나의 십이운성 일러스트 및 분석】
+
+{sibiunseong_illustration_url if sibiunseong_illustration_url else "일러스트 준비 중"}
+
+【전문가 해석】
+십이운성의 조합을 통해 당신의 인생 흐름, 성장 단계, 기회와 도전을 종합적으로 분석할 수 있습니다.
+
+【인생에서의 영향】
+1. 인생의 흐름: 각 시기별 운성의 변화에 따라 인생의 전반적인 흐름이 결정됩니다.
+2. 성장 단계: 십이운성은 인생의 성장 단계를 나타내며, 각 시기의 특성을 잘 파악하는 것이 중요합니다.
+3. 기회와 도전: 각 운성의 특성에 따라 기회가 되는 시기와 도전이 필요한 시기가 구분됩니다.
+4. 준비와 대응: 각 시기의 특성을 미리 파악하고 적절한 준비와 대응을 하는 것이 성공의 열쇠입니다.
+
+【전문가 조언】
+당신의 십이운성 조합을 고려할 때, 각 시기의 특성을 잘 파악하고 그에 맞는 적절한 대응을 하는 것이 중요합니다. 
+특히 긍정적인 기운이 나타나는 시기에는 적극적으로 활동하고, 도전적인 시기에는 신중하게 대응하시기 바랍니다.
+
+【시기별 권장사항】
+• 연간: 장기적인 계획과 목표 설정에 적합한 시기
+• 월간: 중기적인 활동과 발전에 집중할 시기  
+• 일간: 일상적인 활동과 단기 계획에 적합한 시기
+• 시간: 즉각적인 행동과 결정에 영향을 주는 시기
+"""
+    
+    return {
+        "title": "십이운성 분석",
+        "content": analysis_text.strip(),
+        "period_analysis": period_analysis,
+        "comprehensive": comprehensive,
+        "illustration_url": sibiunseong_illustration_url
+    }
+
+def generate_sibisinsal_analysis_detailed(pillars_char: Dict[str, str]) -> Dict[str, Any]:
+    """십이신살 분석 - 상세 버전"""
+    sibisinsal_analysis = analyze_sibisinsal(pillars_char)
+    
+    analysis_text = f"""
+【십이신살 분석】
+
+십이신살은 사주에서 나타나는 열두 가지 신살 유형으로, 특정 시기의 영향을 나타냅니다.
+
+【시기별 십이신살 분석】
+
+초년기:
+{sibisinsal_analysis.get('초년기', '해당 시기의 십이신살 분석입니다.')}
+
+청년기:
+{sibisinsal_analysis.get('청년기', '해당 시기의 십이신살 분석입니다.')}
+
+중년기:
+{sibisinsal_analysis.get('중년기', '해당 시기의 십이신살 분석입니다.')}
+
+장년기:
+{sibisinsal_analysis.get('장년기', '해당 시기의 십이신살 분석입니다.')}
+
+【전문가 해석】
+십이신살의 조합을 통해 각 시기별 특별한 영향을 파악할 수 있습니다.
+
+【인생에서의 영향】
+1. 초년기: 기본적인 인성과 성격이 형성되는 시기입니다.
+2. 청년기: 사회 진출과 인간관계 형성이 중요한 시기입니다.
+3. 중년기: 가정과 직장에서의 안정이 중요한 시기입니다.
+4. 장년기: 인생의 후반부를 준비하는 시기입니다.
+
+【전문가 조언】
+각 시기의 십이신살 특성을 잘 파악하고 적절한 대응을 하는 것이 중요합니다.
+"""
+    
+    return {
+        "title": "십이신살 분석",
+        "content": analysis_text.strip(),
+        "period_analysis": sibisinsal_analysis
+    }
+
+def generate_guin_analysis_detailed(pillars_char: Dict[str, str]) -> Dict[str, Any]:
+    """귀인 분석 - 상세 버전"""
+    guin_analysis = analyze_guin(pillars_char)
+    
+    # 귀인 초상화 생성
+    guin_portrait_prompt = "Traditional Korean noble person portrait, dignified and wise appearance, traditional Korean art style, detailed and colorful"
+    guin_portrait_url = safe_ai_generation("portrait", guin_portrait_prompt)
+    
+    analysis_text = f"""
+【귀인 분석】
+
+귀인은 당신의 인생에서 도움을 주는 중요한 사람들을 나타냅니다.
+
+【시기별 귀인 분석】
+
+초년기:
+{guin_analysis.get('period_analysis', {}).get('초년기', '해당 시기의 귀인 분석입니다.')}
+
+청년기:
+{guin_analysis.get('period_analysis', {}).get('청년기', '해당 시기의 귀인 분석입니다.')}
+
+중년기:
+{guin_analysis.get('period_analysis', {}).get('중년기', '해당 시기의 귀인 분석입니다.')}
+
+장년기:
+{guin_analysis.get('period_analysis', {}).get('장년기', '해당 시기의 귀인 분석입니다.')}
+
+【종합 귀인 분석】
+
+{guin_analysis.get('comprehensive', '귀인 분석 결과입니다.')}
+
+【귀인 초상화】
+
+{guin_portrait_url if guin_portrait_url else "초상화 준비 중"}
+
+【전문가 해석】
+귀인의 조합을 통해 당신의 인생에서 도움을 주는 사람들의 특성을 파악할 수 있습니다.
+
+【인생에서의 영향】
+1. 초년기: 가족과 선생님의 도움을 받게 됩니다.
+2. 청년기: 상사나 멘토의 지도를 받게 됩니다.
+3. 중년기: 동료나 파트너의 협력을 받게 됩니다.
+4. 장년기: 후배나 제자의 도움을 받게 됩니다.
+
+【전문가 조언】
+각 시기의 귀인 특성을 잘 파악하고 그들과의 관계를 중시하는 것이 중요합니다.
+"""
+    
+    return {
+        "title": "귀인 분석",
+        "content": analysis_text.strip(),
+        "period_analysis": guin_analysis.get('period_analysis', {}),
+        "comprehensive": guin_analysis.get('comprehensive', ''),
+        "portrait_url": guin_portrait_url
+    }
+
+def generate_wealth_analysis_detailed(basic_results: Dict[str, Any]) -> Dict[str, Any]:
+    """재물운 분석 - 상세 버전"""
+    wealth_analysis = basic_results.get('wealth_luck_analysis', {})
+    
+    # 재물운 그래프 생성 (간단한 텍스트 기반)
+    wealth_graph = generate_wealth_graph()
+    
+    analysis_text = f"""
+【재물운 분석】
+
+재물운은 당신의 재물과 관련된 운세를 나타냅니다.
+
+【전반적인 재물운 흐름】
+
+{wealth_analysis.get('overall_flow', '재물운의 전반적인 흐름을 분석합니다.')}
+
+【내 재물운 특징】
+
+{chr(10).join([f"• {char.get('title', '')}: {char.get('description', '')}" for char in wealth_analysis.get('characteristics', [])])}
+
+【나에게 이익과 손해를 가져다 줄 사람들】
+
+{wealth_analysis.get('people_analysis', '재물운과 관련된 사람 분석입니다.')}
+
+【내 재물운과 잘 맞는 사업 아이템 또는 재테크】
+
+{wealth_analysis.get('business_analysis', '재물운과 관련된 사업/투자 분석입니다.')}
+
+【인생의 재물운 그래프】
+
+{wealth_graph}
+
+【전문가 해석】
+재물운의 조합을 통해 당신의 재물 관리 능력과 재물 창출 능력을 종합적으로 분석할 수 있습니다.
+
+【인생에서의 영향】
+1. 재물 관리: 재물을 효율적으로 관리하고 활용하는 능력이 중요합니다.
+2. 재물 창출: 새로운 아이디어로 재물을 만들어내는 창의성이 중요합니다.
+3. 재물 활용: 기회를 포착하여 부를 쌓는 능력이 중요합니다.
+4. 재물 보호: 안정적인 수입을 통해 삶의 기반을 다지는 것이 중요합니다.
+
+【전문가 조언】
+재물운의 특성을 잘 파악하고 적절한 재무 관리와 투자를 하는 것이 중요합니다.
+"""
+    
+    return {
+        "title": "재물운 분석",
+        "content": analysis_text.strip(),
+        "overall_flow": wealth_analysis.get('overall_flow', ''),
+        "characteristics": wealth_analysis.get('characteristics', []),
+        "people_analysis": wealth_analysis.get('people_analysis', ''),
+        "business_analysis": wealth_analysis.get('business_analysis', ''),
+        "wealth_graph": wealth_graph
+    }
+
+def generate_wealth_graph() -> str:
+    """재물운 그래프 생성 (텍스트 기반)"""
+    return """
+재물운 흐름 그래프:
+20대: ⬆️ 상승기 (기반 다지기)
+30대: ⬆️⬆️ 급상승기 (재물 축적)
+40대: ➡️ 안정기 (재물 관리)
+50대: ⬆️ 성숙기 (재물 활용)
+60대: ➡️ 유지기 (재물 보호)
+"""
+
+def generate_love_analysis_detailed(basic_results: Dict[str, Any]) -> Dict[str, Any]:
+    """연애운 & 결혼운 분석 - 상세 버전"""
+    love_analysis = basic_results.get('love_luck_analysis', {})
+    
+    # 운명의 짝 초상화 생성
+    partner_portrait_prompt = "Traditional Korean romantic couple portrait, destined partner, traditional Korean art style, detailed and colorful"
+    partner_portrait_url = safe_ai_generation("portrait", partner_portrait_prompt)
+    
+    analysis_text = f"""
+【연애운 & 결혼운 분석】
+
+연애운과 결혼운은 당신의 사랑과 관련된 운세를 나타냅니다.
+
+【나의 전반적인 연애 성향】
+
+{love_analysis.get('overall_tendency', '연애 성향 분석입니다.')}
+
+【내 운명의 짝 소개】
+
+{love_analysis.get('destiny_partner', '운명의 짝에 대한 분석입니다.')}
+
+【이성에게 사랑받기 위한 나의 부족한 점 & 개선점】
+
+{love_analysis.get('improvement_points', '연애에서의 개선점 분석입니다.')}
+
+【내 애정운 전선, 흐름】
+
+{love_analysis.get('flow_analysis', '애정운의 흐름 분석입니다.')}
+
+【나의 연애운이 높은 시기와 장소】
+
+{love_analysis.get('timing_location', '연애운이 높은 시기와 장소 분석입니다.')}
+
+【운명의 짝 초상화 및 분석】
+
+{partner_portrait_url if partner_portrait_url else "초상화 준비 중"}
+
+【전문가 해석】
+연애운과 결혼운의 조합을 통해 당신의 사랑과 관련된 운세를 종합적으로 분석할 수 있습니다.
+
+【인생에서의 영향】
+1. 연애 스타일: 당신의 연애 스타일과 선호하는 관계 유형을 나타냅니다.
+2. 운명의 짝: 당신과 잘 맞는 상대방의 특성을 나타냅니다.
+3. 개선점: 연애에서 성공하기 위해 보완해야 할 점을 나타냅니다.
+4. 시기와 장소: 연애운이 높은 시기와 장소를 나타냅니다.
+
+【전문가 조언】
+연애운의 특성을 잘 파악하고 적절한 대응을 하는 것이 중요합니다.
+"""
+    
+    return {
+        "title": "연애운 & 결혼운 분석",
+        "content": analysis_text.strip(),
+        "overall_tendency": love_analysis.get('overall_tendency', ''),
+        "destiny_partner": love_analysis.get('destiny_partner', ''),
+        "improvement_points": love_analysis.get('improvement_points', ''),
+        "flow_analysis": love_analysis.get('flow_analysis', ''),
+        "timing_location": love_analysis.get('timing_location', ''),
+        "partner_portrait_url": partner_portrait_url
+    }
+
+def generate_career_analysis_detailed(basic_results: Dict[str, Any]) -> Dict[str, Any]:
+    """직업운 분석 - 상세 버전"""
+    career_analysis = basic_results.get('career_luck_analysis', {})
+    
+    analysis_text = f"""
+【직업운 분석】
+
+직업운은 당신의 직업과 관련된 운세를 나타냅니다.
+
+【나와 잘맞는 직업/직장】
+
+{chr(10).join([f"• {job}" for job in career_analysis.get('suitable_jobs', [])])}
+
+【사업 vs 직장 나에겐 뭐가 맞을까 분석】
+
+{career_analysis.get('business_vs_job', '사업과 직장 비교 분석입니다.')}
+
+【성공적인 직장생활을 위한 조언】
+
+{career_analysis.get('advice', '직장생활을 위한 조언입니다.')}
+
+【주의해야 할 사람 분석】
+
+{career_analysis.get('caution_people', '직장에서 주의해야 할 사람 분석입니다.')}
+
+【전문가 해석】
+직업운의 조합을 통해 당신의 적합한 직업과 성공 가능성을 종합적으로 분석할 수 있습니다.
+
+【인생에서의 영향】
+1. 적합한 직업: 당신에게 잘 맞는 직업이나 활동 분야를 나타냅니다.
+2. 사업 vs 직장: 사업과 직장 중 어느 것이 더 적합한지 나타냅니다.
+3. 성공 요인: 직장에서 성공하기 위한 중요한 요소들을 나타냅니다.
+4. 주의사항: 직장에서 주의해야 할 사람이나 상황을 나타냅니다.
+
+【전문가 조언】
+직업운의 특성을 잘 파악하고 적절한 직업 선택과 발전을 하는 것이 중요합니다.
+"""
+    
+    return {
+        "title": "직업운 분석",
+        "content": analysis_text.strip(),
+        "suitable_jobs": career_analysis.get('suitable_jobs', []),
+        "business_vs_job": career_analysis.get('business_vs_job', ''),
+        "advice": career_analysis.get('advice', ''),
+        "caution_people": career_analysis.get('caution_people', '')
+    }
+
+def generate_health_analysis_detailed(basic_results: Dict[str, Any], pillars_char: Dict[str, str]) -> Dict[str, Any]:
+    """건강운 분석 - 상세 버전"""
+    health_analysis = basic_results.get('health_luck_analysis', {})
+    
+    analysis_text = f"""
+【건강운 분석】
+
+건강운은 당신의 건강과 관련된 운세를 나타냅니다.
+
+【타고난 체질과 건강 상태 브리핑】
+
+{health_analysis.get('constitution', '체질과 건강 상태 분석입니다.')}
+
+【부상 위험 있는 신체부위나 조심해야 할 질병】
+
+{chr(10).join([f"• {point}" for point in health_analysis.get('weak_points', [])])}
+
+【나와 잘 맞는 운동은?】
+
+{health_analysis.get('suitable_exercise', '적합한 운동 분석입니다.')}
+
+【시기에 따른 건강운】
+
+{health_analysis.get('timing_analysis', '시기별 건강운 분석입니다.')}
+
+【전문가 해석】
+건강운의 조합을 통해 당신의 건강 상태와 관리 방법을 종합적으로 분석할 수 있습니다.
+
+【인생에서의 영향】
+1. 체질: 당신의 타고난 체질과 건강 상태를 나타냅니다.
+2. 주의사항: 건강에 주의해야 할 부분들을 나타냅니다.
+3. 적합한 운동: 당신에게 잘 맞는 운동을 나타냅니다.
+4. 시기별 관리: 각 시기별 건강 관리 방법을 나타냅니다.
+
+【전문가 조언】
+건강운의 특성을 잘 파악하고 적절한 건강 관리를 하는 것이 중요합니다.
+"""
+    
+    return {
+        "title": "건강운 분석",
+        "content": analysis_text.strip(),
+        "constitution": health_analysis.get('constitution', ''),
+        "weak_points": health_analysis.get('weak_points', []),
+        "suitable_exercise": health_analysis.get('suitable_exercise', ''),
+        "timing_analysis": health_analysis.get('timing_analysis', '')
+    }
+
+def generate_daeun_analysis_detailed(life_flow: Dict[str, Any]) -> Dict[str, Any]:
+    """대운 분석 - 상세 버전"""
+    analysis_text = f"""
+【대운 분석】
+
+대운은 당신의 인생에서 10년 단위로 변화하는 운세를 나타냅니다.
+
+【90세까지의 대운】
+
+{chr(10).join([f"• {period.get('period', '')}: {period.get('age_range', '')} - {period.get('status', '')}" for period in life_flow.get('daeun_periods', [])])}
+
+【향후 5년간의 연운과 삼재】
+
+{chr(10).join([f"• {year.get('year', '')}: {year.get('status', '')}" for year in life_flow.get('seun_periods', [])])}
+
+【향후 5년 동안의 연운】
+
+{life_flow.get('future_outlook', '향후 전망 분석입니다.')}
+
+【곧 맞딱뜨릴 삼재】
+
+{chr(10).join([f"• {point.get('age', '')}: {point.get('description', '')}" for point in life_flow.get('change_points', [])])}
+
+【전문가 해석】
+대운의 조합을 통해 당신의 인생 흐름과 중요한 변화점을 종합적으로 분석할 수 있습니다.
+
+【인생에서의 영향】
+1. 대운: 10년 단위로 변화하는 운세가 인생에 큰 영향을 미칩니다.
+2. 세운: 1년 단위로 변화하는 운세가 당해의 운세를 결정합니다.
+3. 변화점: 인생에서 중요한 변화가 일어나는 시기를 나타냅니다.
+4. 미래 전망: 앞으로의 인생 흐름을 예측할 수 있습니다.
+
+【전문가 조언】
+대운의 특성을 잘 파악하고 적절한 준비와 대응을 하는 것이 중요합니다.
+"""
+    
+    return {
+        "title": "대운 분석",
+        "content": analysis_text.strip(),
+        "daeun_periods": life_flow.get('daeun_periods', []),
+        "seun_periods": life_flow.get('seun_periods', []),
+        "change_points": life_flow.get('change_points', []),
+        "future_outlook": life_flow.get('future_outlook', '')
+    }
+
+def generate_final_summary_detailed(pillars_char: Dict[str, str], basic_results: Dict[str, Any], life_flow: Dict[str, Any]) -> Dict[str, Any]:
+    """종합 리포트 - 상세 버전"""
+    analysis_text = f"""
+【종합 리포트】
+
+20년 역술가의 관점에서 당신의 사주를 종합적으로 분석한 결과입니다.
+
+【사주 기본 정보】
+• 일주: {pillars_char.get('day_gan', '')}{pillars_char.get('day_ji', '')}
 • 사주 구성: {pillars_char.get('year_gan', '')}{pillars_char.get('year_ji', '')}년 {pillars_char.get('month_gan', '')}{pillars_char.get('month_ji', '')}월 {pillars_char.get('day_gan', '')}{pillars_char.get('day_ji', '')}일 {pillars_char.get('hour_gan', '')}{pillars_char.get('hour_ji', '')}시
 
-【일주 분석】
-{ilju_info}
-
-【십성 분석 요약】
-{', '.join(sipsung_summary)}
-
-【십이운성 분석 요약】
-{', '.join(sibiunseong_summary)}
-
-【전문가 종합 해석】
+【핵심 분석 요약】
 
 1. 성격적 특징
-당신의 사주는 {ilju_key}의 특성을 기본으로 하여, {', '.join(sipsung_summary[:2])}의 조합으로 독특한 성격을 형성합니다. 
-특히 {ilju_info.split('특히')[1].split('의')[0] if '특히' in ilju_info else '강한 의지'}의 면모가 두드러지게 나타나며, 
-이는 당신의 인생에서 큰 강점이 될 수 있습니다.
+당신의 사주는 {pillars_char.get('day_gan', '')}일주의 특성을 기본으로 하여 독특한 성격을 형성합니다.
 
 2. 대인관계 분석
-사주에서 나타나는 십성과 운성의 조합을 보면, {sipsung_summary[0] if sipsung_summary else '특정 유형'}의 특성을 가진 사람들과 잘 어울리며, 
-{sibiunseong_summary[0] if sibiunseong_summary else '특정 시기'}의 기운이 강하게 나타나는 시기에는 대인관계에서 특별한 변화가 있을 수 있습니다.
+사주에서 나타나는 십성과 운성의 조합을 보면, 특정 유형의 사람들과 잘 어울리며, 특정 시기에는 대인관계에서 특별한 변화가 있을 수 있습니다.
 
 3. 직업적 성향
-일주의 특성과 십성의 조합을 고려할 때, {ilju_info.split('특히')[1].split('의')[0] if '특히' in ilju_info else '강한 의지'}와 관련된 직업이나 활동이 적합합니다. 
-특히 {sipsung_summary[1] if len(sipsung_summary) > 1 else '특정 분야'}의 특성을 활용한 직업이 성공 가능성이 높습니다.
+일주의 특성과 십성의 조합을 고려할 때, 특정 분야의 직업이나 활동이 적합합니다.
 
 4. 운세의 흐름
-십이운성의 조합을 보면, {sibiunseong_summary[0] if sibiunseong_summary else '특정 시기'}의 기운이 강하게 나타나는 시기가 있으며, 
-이 시기에는 {sibiunseong_summary[1] if len(sibiunseong_summary) > 1 else '특정 변화'}와 관련된 중요한 변화가 있을 수 있습니다.
+십이운성의 조합을 보면, 특정 시기의 기운이 강하게 나타나는 시기가 있으며, 이 시기에는 중요한 변화가 있을 수 있습니다.
 
 【전문가 권장사항】
 
 1. 성격 개발
-• 강점 활용: {ilju_info.split('특히')[1].split('의')[0] if '특히' in ilju_info else '강한 의지'}의 면모를 최대한 활용하세요.
-• 약점 보완: {ilju_info.split('주의사항')[1].split('의')[0] if '주의사항' in ilju_info else '감정적 불안정'}에 주의하고 이를 보완하는 노력을 하세요.
+• 강점 활용: 사주의 긍정적 면모를 최대한 활용하세요.
+• 약점 보완: 주의사항에 해당하는 부분들을 미리 대비하여 부정적 영향을 최소화하세요.
 
 2. 대인관계 관리
-• 적합한 관계: {sipsung_summary[0] if sipsung_summary else '특정 유형'}의 특성을 가진 사람들과의 관계를 중시하세요.
-• 갈등 해결: {sibiunseong_summary[0] if sibiunseong_summary else '특정 시기'}의 기운이 나타나는 시기에는 대인관계에 특별히 주의하세요.
+• 적합한 관계: 특정 유형의 사람들과의 관계를 중시하세요.
+• 갈등 해결: 특정 시기의 기운이 나타나는 시기에는 대인관계에 특별히 주의하세요.
 
 3. 직업적 발전
-• 적합한 분야: {ilju_info.split('특히')[1].split('의')[0] if '특히' in ilju_info else '강한 의지'}와 관련된 직업 분야를 고려하세요.
-• 발전 방향: {sipsung_summary[1] if len(sipsung_summary) > 1 else '특정 분야'}의 특성을 활용한 발전 방향을 모색하세요.
+• 적합한 분야: 사주 특성과 관련된 직업 분야를 고려하세요.
+• 발전 방향: 특정 분야의 특성을 활용한 발전 방향을 모색하세요.
 
 4. 운세 활용
-• 긍정적 시기: {sibiunseong_summary[0] if sibiunseong_summary else '특정 시기'}의 기운이 나타나는 시기에는 적극적으로 활동하세요.
-• 주의 시기: {sibiunseong_summary[1] if len(sibiunseong_summary) > 1 else '특정 시기'}의 기운이 나타나는 시기에는 신중하게 대응하세요.
+• 긍정적 시기: 긍정적인 기운이 나타나는 시기에는 적극적으로 활동하세요.
+• 주의 시기: 도전적인 기운이 나타나는 시기에는 신중하게 대응하세요.
 
 【미래 전망】
-당신의 사주를 종합적으로 분석한 결과, {ilju_info.split('특히')[1].split('의')[0] if '특히' in ilju_info else '강한 의지'}의 면모를 잘 활용하면 
-{sipsung_summary[0] if sipsung_summary else '특정 분야'}에서 큰 성공을 거둘 수 있을 것으로 보입니다. 
-특히 {sibiunseong_summary[0] if sibiunseong_summary else '특정 시기'}의 기운이 강하게 나타나는 시기에는 중요한 기회가 있을 수 있으니 
-미리 준비하시기 바랍니다.
+당신의 사주를 종합적으로 분석한 결과, 사주의 긍정적 면모를 잘 활용하면 특정 분야에서 큰 성공을 거둘 수 있을 것으로 보입니다. 
+특히 특정 시기의 기운이 강하게 나타나는 시기에는 중요한 기회가 있을 수 있으니 미리 준비하시기 바랍니다.
 
 이상의 분석은 20년 역술가의 경험을 바탕으로 한 전문적인 해석입니다. 
 당신의 사주 특성을 잘 파악하고 긍정적 면모를 최대한 활용하여 행복하고 성공적인 인생을 살아가시기 바랍니다.
 """
     
-    recommendations = f"""
-【구체적 권장사항】
-
-1. 일상생활
-• {ilju_info.split('특히')[1].split('의')[0] if '특히' in ilju_info else '강한 의지'}를 활용한 활동을 중시하세요.
-• {ilju_info.split('주의사항')[1].split('의')[0] if '주의사항' in ilju_info else '감정적 불안정'}에 대한 관리가 필요합니다.
-
-2. 대인관계
-• {sipsung_summary[0] if sipsung_summary else '특정 유형'}의 특성을 가진 사람들과의 관계를 중시하세요.
-• {sibiunseong_summary[0] if sibiunseong_summary else '특정 시기'}의 기운이 나타나는 시기에는 대인관계에 특별히 주의하세요.
-
-3. 직업과 재물
-• {ilju_info.split('특히')[1].split('의')[0] if '특히' in ilju_info else '강한 의지'}와 관련된 직업 분야를 고려하세요.
-• {sipsung_summary[1] if len(sipsung_summary) > 1 else '특정 분야'}의 특성을 활용한 재물 관리가 효과적입니다.
-
-4. 건강 관리
-• {ilju_info.split('특히')[1].split('의')[0] if '특히' in ilju_info else '강한 의지'}와 관련된 건강 관리가 중요합니다.
-• {sibiunseong_summary[0] if sibiunseong_summary else '특정 시기'}의 기운이 나타나는 시기에는 건강에 특별히 주의하세요.
-"""
-    
-    future_outlook = f"""
-【미래 전망 및 준비사항】
-
-1. 단기 전망 (1-2년)
-• {sibiunseong_summary[0] if sibiunseong_summary else '특정 시기'}의 기운이 강하게 나타나는 시기가 있을 것으로 예상됩니다.
-• {sipsung_summary[0] if sipsung_summary else '특정 분야'}와 관련된 중요한 기회가 있을 수 있습니다.
-
-2. 중기 전망 (3-5년)
-• {sibiunseong_summary[1] if len(sipsung_summary) > 1 else '특정 분야'}의 특성을 활용한 발전이 예상됩니다.
-• {ilju_info.split('특히')[1].split('의')[0] if '특히' in ilju_info else '강한 의지'}의 면모를 활용한 성공 가능성이 높습니다.
-
-3. 장기 전망 (5년 이상)
-• {sibiunseong_summary[0] if sipsung_summary else '특정 분야'}에서 큰 성공을 거둘 수 있을 것으로 보입니다.
-• {sibiunseong_summary[1] if len(sipsung_summary) > 1 else '특정 분야'}의 특성을 활용한 안정적인 발전이 예상됩니다.
-
-【준비사항】
-1. {ilju_info.split('특히')[1].split('의')[0] if '특히' in ilju_info else '강한 의지'}와 관련된 능력 개발에 집중하세요.
-2. {sipsung_summary[0] if sipsung_summary else '특정 분야'}와 관련된 네트워킹을 중시하세요.
-3. {sibiunseong_summary[0] if sibiunseong_summary else '특정 시기'}의 기운이 나타나는 시기를 미리 파악하고 준비하세요.
-4. {ilju_info.split('주의사항')[1].split('의')[0] if '주의사항' in ilju_info else '감정적 불안정'}에 대한 관리 방안을 마련하세요.
-
-이상의 전망은 당신의 사주 특성을 바탕으로 한 전문적인 예측입니다. 
-적극적인 준비와 노력을 통해 더욱 좋은 결과를 얻으실 수 있을 것입니다.
-"""
-    
     return {
-        "summary": comprehensive_summary.strip(),
-        "recommendations": recommendations.strip(),
-        "future_outlook": future_outlook.strip()
+        "title": "종합 리포트",
+        "content": analysis_text.strip()
     }
 
 def analyze_sibiunseong(pillars_char: Dict[str, str]) -> Dict[str, str]:
