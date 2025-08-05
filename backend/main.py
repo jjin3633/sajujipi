@@ -15,6 +15,26 @@ def read_root():
 def health_check():
     return {"status": "healthy", "message": "API is running"}
 
+@app.route("/test")
+def test_endpoint():
+    """기본 기능 테스트 엔드포인트"""
+    try:
+        # 기본 계산 테스트
+        test_result = get_saju_details(1990, 1, 1, 12, 0)
+        return jsonify({
+            "status": "success",
+            "message": "기본 기능 테스트 성공",
+            "test_result": test_result
+        })
+    except Exception as e:
+        print(f"테스트 엔드포인트 오류: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "status": "error",
+            "message": f"테스트 실패: {str(e)}"
+        }), 500
+
 @app.route("/analysis", methods=["POST"])
 def get_analysis():
     try:
