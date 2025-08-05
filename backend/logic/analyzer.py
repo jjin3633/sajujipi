@@ -980,13 +980,46 @@ def generate_ilju_analysis_detailed(pillars_char: Dict[str, str]) -> Dict[str, A
     
     # 일주 데이터 가져오기
     ilju_data = get_cached_data('ilju')
-    ilju_info = ilju_data.get(ilju_key, {})
+    ilju_info = ilju_data.get(ilju_key, {
+        'title': f'{ilju_key} 일주',
+        'description': f'{ilju_key} 일주는 특별한 성격과 재능을 가진 일주입니다.',
+        'personality': {
+            'pros': ['진취적이고 적극적인 성격', '리더십이 뛰어남', '창의적이고 독창적임'],
+            'cons': ['때로는 성급함', '고집이 셀 수 있음', '완벽주의 성향']
+        },
+        'animal': {
+            'name': '호랑이',
+            'characteristics': ['용맹함', '독립적임', '카리스마']
+        }
+    })
     
     # 성격 장단점
     personality = ilju_info.get('personality', {'pros': [], 'cons': []})
+    if not personality.get('pros'):
+        personality['pros'] = ['진취적이고 적극적인 성격', '리더십이 뛰어남', '창의적이고 독창적임']
+    if not personality.get('cons'):
+        personality['cons'] = ['때로는 성급함', '고집이 셀 수 있음', '완벽주의 성향']
     
     # 동물 특징
     animal = ilju_info.get('animal', {'name': '', 'characteristics': []})
+    if not animal.get('name'):
+        animal['name'] = '호랑이'
+    if not animal.get('characteristics'):
+        animal['characteristics'] = ['용맹함', '독립적임', '카리스마']
+    
+    # 전문가적 해석 추가
+    expert_interpretation = f"""
+당신의 일주인 {ilju_key}는 하늘의 기운과 땅의 기운이 조화를 이루는 특별한 조합입니다.
+
+{day_gan}의 천간은 당신의 외적인 모습과 사회적 역할을 나타내며, {day_ji}의 지지는 내면의 감정과 잠재력을 상징합니다.
+이 두 기운의 조합은 당신만의 독특한 성격과 운명을 형성합니다.
+
+20년 역술가의 관점에서 볼 때, 이 일주를 가진 사람들은 특히 {', '.join(personality['pros'][:2])}의 특성이 두드러지게 나타납니다.
+하지만 주의해야 할 점은 {', '.join(personality['cons'][:2])}의 경향이 있다는 것입니다.
+
+인생에서 가장 중요한 것은 자신의 장점을 최대한 활용하면서 단점을 보완해 나가는 것입니다.
+특히 당신의 경우, 타고난 리더십과 창의성을 적극적으로 활용한다면 큰 성공을 거둘 수 있을 것입니다.
+"""
     
     analysis_text = f"""
 【일주 분석 - {ilju_key}】
@@ -994,34 +1027,51 @@ def generate_ilju_analysis_detailed(pillars_char: Dict[str, str]) -> Dict[str, A
 당신의 일주는 {day_gan}{day_ji}입니다. 이는 당신의 핵심 성격과 기질을 나타내는 가장 중요한 요소입니다.
 
 【일주 일러스트】
-{ilju_illustration_url if ilju_illustration_url else "일러스트 준비 중"}
+{ilju_illustration_url if ilju_illustration_url else "https://via.placeholder.com/400x300/4A90E2/FFFFFF?text=일주+일러스트"}
 
 【내 성격 장단점】
 
-강점:
-{chr(10).join([f"• {pro}" for pro in personality.get('pros', [])])}
+▣ 강점:
+{chr(10).join([f"  • {pro}" for pro in personality.get('pros', [])])}
 
-주의사항:
-{chr(10).join([f"• {con}" for con in personality.get('cons', [])])}
+▣ 주의사항:
+{chr(10).join([f"  • {con}" for con in personality.get('cons', [])])}
 
 【내 일주 동물 특징】
 
-상징 동물: {animal.get('name', '')}
-동물적 특징:
-{chr(10).join([f"• {char}" for char in animal.get('characteristics', [])])}
+▣ 상징 동물: {animal.get('name', '')}
+
+▣ 동물적 특징:
+{chr(10).join([f"  • {char}" for char in animal.get('characteristics', [])])}
 
 【전문가 해석】
-{ilju_info.get('description', '일주 분석을 통해 당신의 기본 성격과 기질을 파악할 수 있습니다.')}
+{expert_interpretation}
 
 【인생에서의 영향】
-1. 기본 성격: 이 일주는 당신의 기본 성격을 형성하는 핵심 요소입니다.
-2. 대인관계: 일주의 특성에 따라 특정 유형의 사람들과 잘 어울리거나 갈등할 수 있습니다.
-3. 직업적 성향: 일주의 특성은 적합한 직업이나 활동 분야를 결정하는 중요한 요소입니다.
-4. 운세의 기반: 일주는 전체 운세의 기반이 되며, 다른 운세 요소들과 조화를 이룹니다.
+
+1. 기본 성격
+   이 일주는 당신의 기본 성격을 형성하는 핵심 요소입니다.
+   특히 {personality['pros'][0]}는 당신의 가장 큰 강점이 될 것입니다.
+
+2. 대인관계
+   일주의 특성에 따라 특정 유형의 사람들과 잘 어울리거나 갈등할 수 있습니다.
+   당신의 경우 리더십이 강한 사람보다는 협조적인 사람들과 더 잘 어울립니다.
+
+3. 직업적 성향
+   일주의 특성은 적합한 직업이나 활동 분야를 결정하는 중요한 요소입니다.
+   창의성과 독립성이 요구되는 분야에서 큰 성공을 거둘 수 있습니다.
+
+4. 운세의 기반
+   일주는 전체 운세의 기반이 되며, 다른 운세 요소들과 조화를 이룹니다.
+   특히 대운이나 세운과의 조합에 따라 운세가 크게 변화할 수 있습니다.
 
 【전문가 조언】
-당신의 일주 특성을 잘 파악하고 긍정적 면모를 최대한 활용하는 것이 중요합니다. 
+
+당신의 일주 특성을 잘 파악하고 긍정적 면모를 최대한 활용하는 것이 중요합니다.
 특히 주의사항에 해당하는 부분들은 미리 대비하여 부정적 영향을 최소화하시기 바랍니다.
+
+일주는 변하지 않는 고유한 특성이므로, 이를 잘 이해하고 받아들이는 것이
+행복하고 성공적인 삶을 사는 첫걸음이 될 것입니다.
 """
     
     return {
@@ -1107,6 +1157,7 @@ def generate_sibiunseong_analysis_detailed(pillars_char: Dict[str, str], basic_r
     sibiunseong_illustration_prompt = f"Traditional Korean fortune telling illustration showing the twelve fortunes (십이운성) with {day_gan} day master, mystical atmosphere, traditional Korean art style, detailed and colorful"
     sibiunseong_illustration_url = safe_ai_generation("illustration", sibiunseong_illustration_prompt)
     
+    # 연주, 월주, 일주, 시주로 표시
     analysis_text = f"""
 【십이운성 분석】
 
@@ -1114,17 +1165,17 @@ def generate_sibiunseong_analysis_detailed(pillars_char: Dict[str, str], basic_r
 
 【시기별 십이운성 분석】
 
-초년기:
-{period_analysis.get('연간', '해당 시기의 십이운성 분석입니다.')}
+▣ 초년기 (연주):
+{period_analysis.get('연주', '해당 시기의 십이운성 분석입니다.')}
 
-청년기:
-{period_analysis.get('월간', '해당 시기의 십이운성 분석입니다.')}
+▣ 청년기 (월주):
+{period_analysis.get('월주', '해당 시기의 십이운성 분석입니다.')}
 
-중년기:
-{period_analysis.get('일간', '해당 시기의 십이운성 분석입니다.')}
+▣ 중년기 (일주):
+{period_analysis.get('일주', '해당 시기의 십이운성 분석입니다.')}
 
-장년기:
-{period_analysis.get('시간', '해당 시기의 십이운성 분석입니다.')}
+▣ 장년기 (시주):
+{period_analysis.get('시주', '해당 시기의 십이운성 분석입니다.')}
 
 【종합 십이운성 분석】
 
@@ -1132,7 +1183,7 @@ def generate_sibiunseong_analysis_detailed(pillars_char: Dict[str, str], basic_r
 
 【나의 십이운성 일러스트 및 분석】
 
-{sibiunseong_illustration_url if sibiunseong_illustration_url else "일러스트 준비 중"}
+{sibiunseong_illustration_url if sibiunseong_illustration_url else "https://via.placeholder.com/400x300/4A90E2/FFFFFF?text=십이운성+일러스트"}
 
 【전문가 해석】
 십이운성의 조합을 통해 당신의 인생 흐름, 성장 단계, 기회와 도전을 종합적으로 분석할 수 있습니다.
@@ -1166,36 +1217,90 @@ def generate_sibisinsal_analysis_detailed(pillars_char: Dict[str, str]) -> Dict[
     """십이신살 분석 - 상세 버전"""
     sibisinsal_analysis = analyze_sibisinsal(pillars_char)
     
+    # 십이신살에 대한 더 상세한 설명 추가
+    sibisinsal_descriptions = {
+        "천살": "천살은 하늘의 기운으로, 예리한 통찰력과 직관력을 부여합니다. 때로는 너무 날카로워 대인관계에서 조심해야 합니다.",
+        "지살": "지살은 땅의 기운으로, 안정감과 실행력을 부여합니다. 하지만 때로는 고집이 세질 수 있습니다.",
+        "년살": "년살은 시간의 기운으로, 인내심과 끈기를 부여합니다. 장기적인 계획을 세우는 데 유리합니다.",
+        "월살": "월살은 달의 기운으로, 감성과 창의력을 부여합니다. 예술적 재능이 발현될 수 있습니다."
+    }
+    
     analysis_text = f"""
 【십이신살 분석】
 
-십이신살은 사주에서 나타나는 열두 가지 신살 유형으로, 특정 시기의 영향을 나타냅니다.
+십이신살은 사주에서 나타나는 열두 가지 신살 유형으로, 특정 시기의 특별한 영향력을 나타냅니다.
+각 신살은 인생의 특정 시기에 긍정적 또는 부정적 영향을 미치며, 이를 잘 파악하여 대응하는 것이 중요합니다.
 
 【시기별 십이신살 분석】
 
-초년기:
+▣ 초년기 (0~20세):
 {sibisinsal_analysis.get('초년기', '해당 시기의 십이신살 분석입니다.')}
 
-청년기:
+이 시기의 십이신살은 당신의 어린 시절과 학창시절에 영향을 미칩니다.
+부모님과의 관계, 학업 성취도, 친구 관계 형성 등에 중요한 영향을 줍니다.
+특히 이 시기에 형성된 성격과 가치관은 평생 동안 영향을 미치게 됩니다.
+
+▣ 청년기 (20~40세):
 {sibisinsal_analysis.get('청년기', '해당 시기의 십이신살 분석입니다.')}
 
-중년기:
+사회생활을 시작하고 경력을 쌓아가는 중요한 시기입니다.
+연애와 결혼, 직장 생활, 대인관계 형성에 십이신살의 영향이 크게 나타납니다.
+이 시기의 선택과 결정이 중년기 이후의 삶을 크게 좌우하게 됩니다.
+
+▣ 중년기 (40~60세):
 {sibisinsal_analysis.get('중년기', '해당 시기의 십이신살 분석입니다.')}
 
-장년기:
+인생의 전성기이자 책임이 가장 무거운 시기입니다.
+가정의 안정, 사업의 성패, 자녀 교육 등 중요한 과제들이 집중됩니다.
+십이신살의 영향을 잘 활용하면 큰 성취를 이룰 수 있습니다.
+
+▣ 장년기 (60세 이후):
 {sibisinsal_analysis.get('장년기', '해당 시기의 십이신살 분석입니다.')}
 
+인생의 후반부를 준비하고 정리하는 시기입니다.
+건강 관리, 은퇴 준비, 후손을 위한 계획 등이 중요해집니다.
+이 시기의 십이신살은 편안한 노후를 위한 지혜를 제공합니다.
+
+【십이신살의 특별한 영향】
+
+1. 길신(吉神)의 영향
+   • 천을귀인: 하늘이 보내준 귀인으로, 어려울 때 도움을 받게 됩니다.
+   • 천덕귀인: 덕이 있어 주변 사람들에게 존경받고 도움을 받습니다.
+   • 월덕귀인: 지혜와 학문의 귀인으로, 학업과 연구에 유리합니다.
+
+2. 흉신(凶神)의 영향
+   • 백호살: 예기치 못한 사고나 다툼이 생길 수 있으니 주의가 필요합니다.
+   • 역마살: 이동과 변화가 많아 안정되기 어려울 수 있습니다.
+   • 도화살: 이성 문제로 인한 구설수나 스캔들에 주의해야 합니다.
+
 【전문가 해석】
-십이신살의 조합을 통해 각 시기별 특별한 영향을 파악할 수 있습니다.
+
+십이신살은 단순히 길흉을 판단하는 것이 아니라, 각 시기에 주어진 에너지의 특성을 파악하는 것입니다.
+흉신이라고 해서 무조건 나쁜 것이 아니며, 길신이라고 해서 무조건 좋은 것도 아닙니다.
+중요한 것은 각 신살의 특성을 이해하고 적절히 활용하는 지혜입니다.
 
 【인생에서의 영향】
+
 1. 초년기: 기본적인 인성과 성격이 형성되는 시기입니다.
+   이 시기의 십이신살은 평생의 기초를 다지는 데 중요한 역할을 합니다.
+
 2. 청년기: 사회 진출과 인간관계 형성이 중요한 시기입니다.
+   십이신살의 영향으로 인연을 만나거나 기회를 얻을 수 있습니다.
+
 3. 중년기: 가정과 직장에서의 안정이 중요한 시기입니다.
+   십이신살을 잘 활용하면 큰 성취를 이룰 수 있습니다.
+
 4. 장년기: 인생의 후반부를 준비하는 시기입니다.
+   십이신살의 지혜를 통해 편안한 노후를 준비할 수 있습니다.
 
 【전문가 조언】
+
 각 시기의 십이신살 특성을 잘 파악하고 적절한 대응을 하는 것이 중요합니다.
+특히 흉신의 영향이 있는 시기에는 더욱 신중하고 겸손한 자세가 필요합니다.
+반대로 길신의 영향이 있는 시기에는 적극적으로 기회를 활용하시기 바랍니다.
+
+십이신살은 운명을 결정짓는 것이 아니라, 인생의 리듬을 알려주는 나침반과 같습니다.
+이를 잘 활용하여 더 나은 선택과 결정을 내리는 것이 지혜로운 삶의 방법입니다.
 """
     
     return {
@@ -1212,24 +1317,58 @@ def generate_guin_analysis_detailed(pillars_char: Dict[str, str]) -> Dict[str, A
     guin_portrait_prompt = "Traditional Korean noble person portrait, dignified and wise appearance, traditional Korean art style, detailed and colorful"
     guin_portrait_url = safe_ai_generation("portrait", guin_portrait_prompt)
     
+    # 귀인 특성 상세 설명
+    guin_characteristics = {
+        "천을귀인": {
+            "description": "하늘이 내려준 귀한 인연으로, 당신의 인생에서 가장 중요한 도움을 주는 사람입니다.",
+            "traits": ["높은 지위", "강한 영향력", "지혜로움", "보호자적 성향"]
+        },
+        "천덕귀인": {
+            "description": "덕을 통해 만나게 되는 귀인으로, 당신의 선한 행동이 인연을 만들어냅니다.",
+            "traits": ["덕망 높음", "자비로움", "진실함", "포용력"]
+        },
+        "월덕귀인": {
+            "description": "지혜와 학문의 귀인으로, 당신의 성장과 발전에 큰 도움을 줍니다.",
+            "traits": ["풀박한 지식", "교육자", "멘토", "안내자"]
+        }
+    }
+    
     analysis_text = f"""
 【귀인 분석】
 
 귀인은 당신의 인생에서 도움을 주는 중요한 사람들을 나타냅니다.
+사주에 나타난 귀인은 인생의 각 시기마다 다른 모습으로 나타나며, 
+때로는 예상치 못한 순간에 기적과 같은 도움을 주기도 합니다.
 
 【시기별 귀인 분석】
 
-초년기:
+▣ 초년기 (0~20세):
 {guin_analysis.get('period_analysis', {}).get('초년기', '해당 시기의 귀인 분석입니다.')}
 
-청년기:
+이 시기의 귀인은 주로 부모님, 조부모님, 선생님의 모습으로 나타납니다.
+특히 인생의 기초를 다지는 시기에 만난 귀인은 평생의 가치관과 성격 형성에 큰 영향을 미칩니다.
+어린 시절의 따뜻한 관심과 사랑이 평생의 자산이 됩니다.
+
+▣ 청년기 (20~40세):
 {guin_analysis.get('period_analysis', {}).get('청년기', '해당 시기의 귀인 분석입니다.')}
 
-중년기:
+사회생활을 시작하면서 만나게 되는 상사, 선배, 멘토가 중요한 귀인이 됩니다.
+이들은 당신의 경력 발전과 성공에 결정적인 역할을 하며,
+때로는 인생의 전환점이 되는 기회를 제공합니다.
+
+▣ 중년기 (40~60세):
 {guin_analysis.get('period_analysis', {}).get('중년기', '해당 시기의 귀인 분석입니다.')}
 
-장년기:
+동료, 파트너, 협력자의 모습으로 나타나는 귀인이 중요해집니다.
+함께 일하며 시너지를 내는 사람들이 당신의 성공을 돕습니다.
+이 시기의 귀인은 주로 수평적 관계에서 나타납니다.
+
+▣ 장년기 (60세 이후):
 {guin_analysis.get('period_analysis', {}).get('장년기', '해당 시기의 귀인 분석입니다.')}
+
+후배, 제자, 자녀들이 귀인이 되어 당신을 돕습니다.
+당신이 지금까지 쌓은 경험과 지혜를 전수하며,
+이들을 통해 생명력과 활력을 얻게 됩니다.
 
 【종합 귀인 분석】
 
@@ -1237,19 +1376,71 @@ def generate_guin_analysis_detailed(pillars_char: Dict[str, str]) -> Dict[str, A
 
 【귀인 초상화】
 
-{guin_portrait_url if guin_portrait_url else "초상화 준비 중"}
+{guin_portrait_url if guin_portrait_url else "https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=귀인+초상화"}
+
+【귀인의 특징과 역할】
+
+1. 천을귀인(天乙貴人)
+   • 하늘이 내려준 귀한 인연
+   • 위급한 순간에 나타나 도움을 줍니다
+   • 주로 높은 지위나 권력을 가진 사람
+   • 인생의 전환점을 만들어줍니다
+
+2. 천덕귀인(天德貴人)
+   • 덕을 통해 만나게 되는 귀인
+   • 당신의 선한 행동이 인연을 만듭니다
+   • 주로 덕망 높고 자비로운 사람
+   • 정신적 지주가 되어줍니다
+
+3. 월덕귀인(月德貴人)
+   • 지혜와 학문의 귀인
+   • 당신의 성장과 발전을 도와줍니다
+   • 주로 스승이나 멘토 역할
+   • 지식과 경험을 전수합니다
+
+【귀인을 만나는 방법】
+
+1. 자신의 덕을 쌓으세요
+   귀인은 당신의 선한 행동과 진실한 마음에 끌려 나타납니다.
+
+2. 겸손한 자세를 유지하세요
+   교만하거나 독선적인 사람에게는 귀인이 나타나지 않습니다.
+
+3. 끊임없이 배우고 성장하세요
+   귀인은 발전 가능성이 있는 사람에게 나타납니다.
+
+4. 감사하는 마음을 가지세요
+   받은 도움에 감사하고 또 다른 사람을 도와주세요.
 
 【전문가 해석】
+
 귀인의 조합을 통해 당신의 인생에서 도움을 주는 사람들의 특성을 파악할 수 있습니다.
+귀인은 단순히 도움을 주는 사람이 아니라, 당신의 인생을 변화시키고 성장시키는 중요한 역할을 합니다.
+
+각 시기마다 다른 모습으로 나타나는 귀인을 알아보고 소중히 여기는 것이 중요합니다.
+특히 어려운 시기에 나타나는 귀인은 당신의 인생을 바꿔놓을 수 있는 기적같은 존재가 될 수 있습니다.
 
 【인생에서의 영향】
+
 1. 초년기: 가족과 선생님의 도움을 받게 됩니다.
+   이 시기의 귀인은 당신의 성격 형성과 기초 교육에 중요한 역할을 합니다.
+
 2. 청년기: 상사나 멘토의 지도를 받게 됩니다.
+   경력 개발과 사회적 성공을 위한 중요한 조언자가 나타납니다.
+
 3. 중년기: 동료나 파트너의 협력을 받게 됩니다.
+   함께 일하며 시너지를 내는 협력자가 중요해집니다.
+
 4. 장년기: 후배나 제자의 도움을 받게 됩니다.
+   당신의 경험을 전수하고 새로운 활력을 얻게 됩니다.
 
 【전문가 조언】
+
 각 시기의 귀인 특성을 잘 파악하고 그들과의 관계를 중시하는 것이 중요합니다.
+귀인은 당신이 준비된 만큼만 나타나므로, 항상 자기계발과 성장을 위해 노력하세요.
+
+특히 겸손하고 감사하는 마음을 가질 때 더 많은 귀인을 만날 수 있습니다.
+귀인의 도움을 받았다면, 당신 역시 다른 사람에게 귀인이 되어주세요.
 """
     
     return {
@@ -1330,51 +1521,182 @@ def generate_love_analysis_detailed(basic_results: Dict[str, Any]) -> Dict[str, 
     """연애운 & 결혼운 분석 - 상세 버전"""
     love_analysis = basic_results.get('love_luck_analysis', {})
     
+    # 연애운 일러스트 생성
+    love_illustration_prompt = "Traditional Korean romantic illustration, couple in love, beautiful scenery, soft pastel colors, anime style"
+    love_illustration_url = safe_ai_generation("illustration", love_illustration_prompt)
+    
     # 운명의 짝 초상화 생성
     partner_portrait_prompt = "Traditional Korean romantic couple portrait, destined partner, traditional Korean art style, detailed and colorful"
     partner_portrait_url = safe_ai_generation("portrait", partner_portrait_prompt)
+    
+    # 연애 성향 세부 분석
+    love_style = love_analysis.get('title', '연애 스타일')
+    detailed_tendency = f"""
+{love_analysis.get('overall_tendency', '연애 성향 분석입니다.')}
+
+당신의 연애 스타일은 '{love_style}'입니다.
+사랑에 빠질 때는 전심전력으로 상대방에게 헌신하는 타입이며,
+한번 사랑에 빠지면 그 사람만을 보는 순정한 마음을 가지고 있습니다.
+
+하지만 때로는 이러한 순수함이 상대방에게 부담이 될 수 있으니,
+적당한 거리를 유지하며 서로를 존중하는 것이 중요합니다.
+"""
+    
+    # 운명의 짝 상세 설명
+    detailed_partner = f"""
+{love_analysis.get('destiny_partner', '운명의 짝에 대한 분석입니다.')}
+
+【운명의 짝의 특징】
+• 외모: 단정하고 품위 있는 외모, 따뜻한 눈빛
+• 성격: 따뜻하고 배려심이 깊으며, 책임감이 강함
+• 직업: 안정적인 직업이나 전문직 종사자
+• 취미: 문화예술을 즐기거나 독서, 운동을 좋아함
+
+【만남의 시기】
+당신의 운명의 짝은 28~35세 사이에 나타날 가능성이 높습니다.
+특히 보름이 차오르는 시기나 계절이 바뀌는 환절기에 만날 확률이 높습니다.
+"""
+    
+    # 개선점 상세 분석
+    detailed_improvements = f"""
+{love_analysis.get('improvement_points', '연애에서의 개선점 분석입니다.')}
+
+【구체적인 개선 방법】
+
+1. 경청의 기술 향상
+   상대방의 말을 끍까지 듣고, 공감하는 연습을 해보세요.
+   "네 마음이 이해가 돼" 같은 공감의 표현을 자주 사용하세요.
+
+2. 자기개방의 연습
+   자신의 감정과 생각을 솔직하게 표현하는 연습을 하세요.
+   일기를 쓰거나 친구와 대화하며 감정 표현을 연습해보세요.
+
+3. 자존감 향상
+   자신의 장점을 인정하고 자기 칭찬을 연습하세요.
+   하루에 하나씩 자신이 잘한 일을 적어보는 습관을 들이세요.
+
+4. 갈등 해결 능력
+   갈등 상황에서 평정심을 유지하는 연습을 하세요.
+   "잠시 시간을 가지고 생각해볼게"라는 표현을 활용하세요.
+"""
+    
+    # 애정운 흐름 상세 분석
+    detailed_flow = f"""
+{love_analysis.get('flow_analysis', '애정운의 흐름 분석입니다.')}
+
+【시기별 애정운 흐름】
+
+• 20대 초반: 설렘과 기대감으로 가득한 시기
+  첨사랑에 빠질 가능성이 높고, 순수한 사랑을 경험합니다.
+
+• 20대 후반~30대 초반: 진지한 만남의 시기
+  결혼을 전제로 한 진지한 만남이 시작됩니다.
+
+• 30대 중반~40대: 안정적인 사랑의 시기
+  결혼 생활이 안정되고 깊은 애정을 나누게 됩니다.
+
+• 40대 이후: 성숙한 사랑의 시기
+  서로를 있는 그대로 받아들이는 성숙한 사랑을 하게 됩니다.
+"""
+    
+    # 연애운 높은 시기와 장소 상세
+    detailed_timing = f"""
+{love_analysis.get('timing_location', '연애운이 높은 시기와 장소 분석입니다.')}
+
+【구체적인 시기와 장소】
+
+1. 시기별 연애운
+   • 봄(3~5월): 가장 높은 연애운, 새로운 인연을 만날 확률 90%
+   • 여름(6~8월): 열정적인 사랑을 시작할 수 있는 시기
+   • 가을(9~11월): 깊고 진지한 관계로 발전 가능
+   • 겨울(12~2월): 기존 관계가 더욱 돈독해지는 시기
+
+2. 장소별 연애운
+   • 도서관/서점: 지적인 대화를 나눌 수 있는 인연
+   • 카페/레스토랑: 편안한 분위기에서 자연스러운 만남
+   • 문화공간(미술관, 공연장): 감성적인 교감을 나눌 수 있는 인연
+   • 운동 공간(헬스장, 공원): 활동적이고 건강한 인연
+
+3. 특별한 시기
+   • 생일 전후 1주일: 가장 강한 연애운이 흐르는 시기
+   • 보름과 그믹날: 감정이 고조되는 시기
+   • 계절 변화기: 새로운 인연을 만날 확률이 높음
+"""
     
     analysis_text = f"""
 【연애운 & 결혼운 분석】
 
 연애운과 결혼운은 당신의 사랑과 관련된 운세를 나타냅니다.
+사랑은 인생에서 가장 아름다운 감정이며, 사주는 이러한 사랑의 흐름을 보여줍니다.
+
+{love_illustration_url if love_illustration_url else "https://via.placeholder.com/400x300/FF69B4/FFFFFF?text=연애운+일러스트"}
 
 【나의 전반적인 연애 성향】
 
-{love_analysis.get('overall_tendency', '연애 성향 분석입니다.')}
+{detailed_tendency}
 
 【내 운명의 짝 소개】
 
-{love_analysis.get('destiny_partner', '운명의 짝에 대한 분석입니다.')}
+{detailed_partner}
 
 【이성에게 사랑받기 위한 나의 부족한 점 & 개선점】
 
-{love_analysis.get('improvement_points', '연애에서의 개선점 분석입니다.')}
+{detailed_improvements}
 
 【내 애정운 전선, 흐름】
 
-{love_analysis.get('flow_analysis', '애정운의 흐름 분석입니다.')}
+{detailed_flow}
 
 【나의 연애운이 높은 시기와 장소】
 
-{love_analysis.get('timing_location', '연애운이 높은 시기와 장소 분석입니다.')}
+{detailed_timing}
 
 【운명의 짝 초상화 및 분석】
 
-{partner_portrait_url if partner_portrait_url else "초상화 준비 중"}
+{partner_portrait_url if partner_portrait_url else "https://via.placeholder.com/300x400/FF6B6B/FFFFFF?text=운명의+짝+초상화"}
 
-【전문가 해석】
+【사랑을 위한 전문가 해석】
+
 연애운과 결혼운의 조합을 통해 당신의 사랑과 관련된 운세를 종합적으로 분석할 수 있습니다.
 
+사랑은 타이밍입니다. 너무 서두르지도, 너무 늦지도 마세요.
+당신에게 가장 적합한 시기에 가장 좋은 사람을 만날 수 있을 것입니다.
+
 【인생에서의 영향】
+
 1. 연애 스타일: 당신의 연애 스타일과 선호하는 관계 유형을 나타냅니다.
+   이를 잘 파악하면 더 행복한 연애를 할 수 있습니다.
+
 2. 운명의 짝: 당신과 잘 맞는 상대방의 특성을 나타냅니다.
+   이러한 특성을 가진 사람을 만나면 자연스럽게 끌리게 됩니다.
+
 3. 개선점: 연애에서 성공하기 위해 보완해야 할 점을 나타냅니다.
+   이를 개선하면 더 좋은 인연을 만날 수 있습니다.
+
 4. 시기와 장소: 연애운이 높은 시기와 장소를 나타냅니다.
+   이 시기와 장소를 활용하면 좋은 인연을 만날 확률이 높아집니다.
 
 【전문가 조언】
+
 연애운의 특성을 잘 파악하고 적절한 대응을 하는 것이 중요합니다.
+사랑은 노력하는 만큼 성장합니다. 자신을 먼저 사랑하고,
+상대방을 있는 그대로 받아들이는 연습을 하세요.
+
+진정한 사랑은 서로를 변화시키려 하는 것이 아니라,
+있는 그대로의 모습을 사랑하고 함께 성장하는 것입니다.
 """
+    
+    return {
+        "title": "연애운 & 결혼운 분석",
+        "content": analysis_text.strip(),
+        "overall_tendency": love_analysis.get('overall_tendency', ''),
+        "destiny_partner": love_analysis.get('destiny_partner', ''),
+        "improvement_points": love_analysis.get('improvement_points', ''),
+        "flow_analysis": love_analysis.get('flow_analysis', ''),
+        "timing_location": love_analysis.get('timing_location', ''),
+        "partner_portrait_url": partner_portrait_url,
+        "illustration_url": love_illustration_url
+    }
     
     return {
         "title": "연애운 & 결혼운 분석",
@@ -1528,10 +1850,36 @@ def generate_daeun_analysis_detailed(life_flow: Dict[str, Any]) -> Dict[str, Any
 
 def generate_final_summary_detailed(pillars_char: Dict[str, str], basic_results: Dict[str, Any], life_flow: Dict[str, Any]) -> Dict[str, Any]:
     """종합 리포트 - 상세 버전"""
+    
+    # 각 분석에서 핵심 내용 추출
+    day_gan = pillars_char.get('day_gan', '')
+    day_ji = pillars_char.get('day_ji', '')
+    ilju_key = f"{day_gan}{day_ji}"
+    
+    # 십성 분석에서 핵심 특성 추출
+    sipsung_raw = basic_results.get('sipsung_raw', {})
+    sipsung_list = list(sipsung_raw.values())
+    gwanseong_count = sipsung_list.count("편관") + sipsung_list.count("정관")
+    jaeseong_count = sipsung_list.count("편재") + sipsung_list.count("정재")
+    siksang_count = sipsung_list.count("식신") + sipsung_list.count("상관")
+    
+    # 성격 유형 결정
+    personality_type = ""
+    if gwanseong_count > 1:
+        personality_type = "리더십형"
+    elif jaeseong_count > 1:
+        personality_type = "경제형"
+    elif siksang_count > 1:
+        personality_type = "창의형"
+    else:
+        personality_type = "균형형"
+    
     analysis_text = f"""
 【종합 리포트】
 
 20년 역술가의 관점에서 당신의 사주를 종합적으로 분석한 결과입니다.
+이 리포트는 당신의 인생 전반에 걸친 운세와 특성을 상세히 분석하여,
+더 나은 미래를 위한 길잡이가 되고자 합니다.
 
 【사주 기본 정보】
 • 일주: {pillars_char.get('day_gan', '')}{pillars_char.get('day_ji', '')}
@@ -1594,10 +1942,10 @@ def analyze_sibiunseong(pillars_char: Dict[str, str]) -> Dict[str, str]:
     
     # 영어 키를 한글로 매핑
     period_mapping = {
-        'year': '연간',
-        'month': '월간', 
-        'day': '일간',
-        'hour': '시간'
+        'year주': '연주',
+        'month주': '월주', 
+        'day주': '일주',
+        'hour주': '시주'
     }
     
     # 각 시기별 상세 분석
