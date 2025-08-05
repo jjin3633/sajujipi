@@ -1,8 +1,11 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from logic.analyzer import get_saju_details
 import traceback
 import os
+import time
+
+# 서버 시작 시간 기록
+SERVER_START_TIME = time.time()
 
 app = Flask(__name__)
 # CORS 설정을 더 구체적으로 지정
@@ -13,16 +16,24 @@ CORS(app,
 
 @app.route("/")
 def read_root():
-    return {"message": "사주팔자 전문가 AI 역술가입니다.", "status": "running"}
+    return {"message": "사주지피 API", "status": "running", "version": "1.0"}
 
 @app.route("/health")
 def health_check():
-    return {"status": "healthy", "message": "API is running"}
+    uptime = time.time() - SERVER_START_TIME
+    return {
+        "status": "healthy", 
+        "message": "API is running",
+        "uptime_seconds": round(uptime, 2)
+    }
 
 @app.route("/test")
 def test_endpoint():
     """기본 기능 테스트 엔드포인트"""
     try:
+        # 지연 import로 시작 시간 단축
+        from logic.saju_analyzer import get_saju_details
+        
         # 기본 계산 테스트
         test_result = get_saju_details(1990, 1, 1, 12, 0)
         return jsonify({
@@ -94,6 +105,9 @@ def get_analysis():
             return response, 400
         
         print(f"분석 시작: {year}-{month}-{day} {hour}:{minute}")
+        
+        # 지연 import로 시작 시간 단축
+        from logic.saju_analyzer import get_saju_details
         
         # 사주 분석 실행
         analysis_result = get_saju_details(year, month, day, hour, minute)
