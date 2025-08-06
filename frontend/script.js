@@ -305,6 +305,12 @@ window.SajuApp.SipsungDisplay = class extends BaseDisplay {
         super('sipsung-analysis');
     }
     
+    display(data) {
+        this.clear();
+        this.section.innerHTML = this.renderContent(data);
+        this.show();
+    }
+    
     renderContent(data) {
         const sipsung = data.sipsung_analysis || {};
         return `
@@ -320,6 +326,12 @@ window.SajuApp.SipsungDisplay = class extends BaseDisplay {
 window.SajuApp.SibiunseongDisplay = class extends BaseDisplay {
     constructor() {
         super('sibiunseong-analysis');
+    }
+    
+    display(data) {
+        this.clear();
+        this.section.innerHTML = this.renderContent(data);
+        this.show();
     }
     
     renderContent(data) {
@@ -338,6 +350,12 @@ window.SajuApp.SibiunseongDisplay = class extends BaseDisplay {
 window.SajuApp.CareerDisplay = class extends BaseDisplay {
     constructor() {
         super('career-analysis');
+    }
+    
+    display(data) {
+        this.clear();
+        this.section.innerHTML = this.renderContent(data);
+        this.show();
     }
     
     renderContent(data) {
@@ -373,6 +391,12 @@ window.SajuApp.LoveDisplay = class extends BaseDisplay {
         super('love-analysis');
     }
     
+    display(data) {
+        this.clear();
+        this.section.innerHTML = this.renderContent(data);
+        this.show();
+    }
+    
     renderContent(data) {
         const love = data.love_and_marriage_analysis || {};
         return `
@@ -395,6 +419,12 @@ window.SajuApp.WealthDisplay = class extends BaseDisplay {
         super('wealth-analysis');
     }
     
+    display(data) {
+        this.clear();
+        this.section.innerHTML = this.renderContent(data);
+        this.show();
+    }
+    
     renderContent(data) {
         const wealth = data.wealth_luck_analysis || {};
         return `
@@ -413,6 +443,12 @@ window.SajuApp.WealthDisplay = class extends BaseDisplay {
 window.SajuApp.HealthDisplay = class extends BaseDisplay {
     constructor() {
         super('health-analysis');
+    }
+    
+    display(data) {
+        this.clear();
+        this.section.innerHTML = this.renderContent(data);
+        this.show();
     }
     
     renderContent(data) {
@@ -434,6 +470,12 @@ window.SajuApp.HealthDisplay = class extends BaseDisplay {
 window.SajuApp.DaeunDisplay = class extends BaseDisplay {
     constructor() {
         super('daeun-analysis');
+    }
+    
+    display(data) {
+        this.clear();
+        this.section.innerHTML = this.renderContent(data);
+        this.show();
     }
     
     renderContent(data) {
@@ -503,6 +545,12 @@ window.SajuApp.DaeunDisplay = class extends BaseDisplay {
 window.SajuApp.ComprehensiveDisplay = class extends BaseDisplay {
     constructor() {
         super('comprehensive-report');
+    }
+    
+    display(data) {
+        this.clear();
+        this.section.innerHTML = this.renderContent(data);
+        this.show();
     }
     
     renderContent(data) {
