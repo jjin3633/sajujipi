@@ -26,8 +26,8 @@ export class DisplayManager {
     
     displayAll(data) {
         // 모든 섹션 표시
-        Object.values(this.displays).forEach(display => {
-            display.display(data);
+        Object.values(this.displays).forEach(displayManager => {
+            displayManager.displayAll(data);
         });
     }
     
