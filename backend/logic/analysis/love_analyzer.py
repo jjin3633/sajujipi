@@ -1,246 +1,126 @@
 # 연애운 분석 모듈
 class LoveAnalyzer:
     """연애운 & 결혼운 분석을 담당하는 클래스"""
-    
-    # 오행 데이터
-    OHENG_GAN = {
-        "갑": "목", "을": "목", "병": "화", "정": "화",
-        "무": "토", "기": "토", "경": "금", "신": "금",
-        "임": "수", "계": "수"
+
+    OHENG_RELATIONS = {
+        '목': {'birth': '화', 'control': '토'}, '화': {'birth': '토', 'control': '금'},
+        '토': {'birth': '금', 'control': '수'}, '금': {'birth': '수', 'control': '목'},
+        '수': {'birth': '목', 'control': '화'}
     }
-    
-    def analyze(self, saju_pillars, sipsung_data):
-        """연애운 분석 수행"""
+    OHENG_GAN = {"갑": "목", "을": "목", "병": "화", "정": "화", "무": "토", "기": "토", "경": "금", "신": "금", "임": "수", "계": "수"}
+
+    def analyze(self, saju_pillars, sipsung_data, gender='여자'):
+        """연애운 분석 수행 (성별에 따라 재성/관성 해석을 달리함)"""
         try:
-            # 십성 리스트 생성
-            sipsung_list = list(sipsung_data.values()) if isinstance(sipsung_data, dict) else []
-            
-            # 연애 관련 십성 분석
-            gwanseong_count = sipsung_list.count("편관") + sipsung_list.count("정관")  # 배우자, 연인
-            jaeseong_count = sipsung_list.count("편재") + sipsung_list.count("정재")    # 재물, 매력
-            siksang_count = sipsung_list.count("식신") + sipsung_list.count("상관")    # 표현력, 매력
-            inseong_count = sipsung_list.count("편인") + sipsung_list.count("정인")    # 정신적 교감
-            
-            # 일간 오행 분석 (남녀 구분)
-            day_gan = saju_pillars.get('day', '')[:1] if saju_pillars.get('day', '') else ''
-            
-            # 연애 스타일 분석
-            love_style = self._analyze_love_style(gwanseong_count, jaeseong_count, siksang_count)
-            
-            # 전체적 경향 분석
-            overall_tendency = self._analyze_overall_tendency(love_style, gwanseong_count, jaeseong_count)
-            
-            # 이상형 분석
-            ideal_partner = self._analyze_ideal_partner(sipsung_list, day_gan)
-            
-            # 개선점 분석
-            improvement_points = self._analyze_improvement_points(gwanseong_count, jaeseong_count, siksang_count)
-            
-            # 시기별 흐름 분석
-            flow_analysis = self._analyze_love_flow(gwanseong_count, jaeseong_count)
-            
-            # 인연 시기와 장소
-            timing_location = self._analyze_timing_location(saju_pillars, sipsung_list)
-            
-            # 초상화 URL 생성
-            portrait_url = self._generate_portrait_url(love_style['type'])
+            day_gan = saju_pillars.get('day', {}).get('gan')
+            if not day_gan: return self._get_default_analysis()
+
+            day_oheng = self.OHENG_GAN.get(day_gan)
+            love_style = self._analyze_love_style(sipsung_data, day_oheng, gender)
             
             return {
-                'title': love_style['type'],
+                'title': f"{love_style['type']} ({love_style['keyword']})",
                 'description': love_style['description'],
-                'overall_tendency': overall_tendency,
-                'ideal_partner': ideal_partner,
-                'improvement_points': improvement_points,
-                'flow_analysis': flow_analysis,
-                'timing_location': timing_location,
-                'portrait_url': portrait_url
+                'overall_tendency': self._analyze_overall_tendency(sipsung_data),
+                'ideal_partner': self._analyze_ideal_partner(day_oheng, sipsung_data),
+                'improvement_points': self._analyze_improvement_points(sipsung_data, gender),
+                'flow_analysis': self._analyze_love_flow(sipsung_data, gender),
+                'timing_location': self._analyze_timing_location(saju_pillars),
+                'portrait_url': self._generate_portrait_url(love_style['type'])
             }
         except Exception as e:
             print(f"연애운 분석 중 오류: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return self._get_default_analysis()
-    
-    def _analyze_love_style(self, gwanseong, jaeseong, siksang):
-        """연애 스타일 분석"""
-        if gwanseong == 0 and jaeseong == 0:
-            return {
-                'type': '자유로운 연애 스타일',
-                'description': '사주에 배우자(관성)와 매력(재성)이 부족하여, 연애에 얽매이지 않고 자유로운 관계를 추구합니다. 친구 같은 편안한 관계를 선호하며, 결혼보다는 연애 자체를 즐기는 스타일입니다.'
-            }
-        elif gwanseong > 0 and jaeseong == 0:
-            return {
-                'type': '전통적인 연애 스타일',
-                'description': '사주에 배우자(관성)는 있지만 매력(재성)이 부족하여, 전통적이고 안정적인 연애를 선호합니다. 진지한 관계를 추구하며, 결혼을 염두에 둔 연애를 하는 스타일입니다.'
-            }
-        elif gwanseong == 0 and jaeseong > 0:
-            return {
-                'type': '매력적인 연애 스타일',
-                'description': '사주에 매력(재성)은 있지만 배우자(관성)가 부족하여, 이성에게 인기는 많지만 깊은 관계로 발전하기 어려울 수 있습니다. 다양한 연애 경험을 통해 진정한 사랑을 찾아가는 스타일입니다.'
-            }
-        elif gwanseong > 0 and jaeseong > 0:
-            return {
-                'type': '열정적인 연애 스타일',
-                'description': '사주에 배우자(관성)와 매력(재성)을 모두 갖추고 있어, 열정적이고 활발한 연애를 즐기는 스타일입니다. 상대방을 사로잡는 매력이 뛰어나며, 깊이 있는 관계로 발전할 가능성이 높습니다.'
-            }
-        elif siksang > 1:
-            return {
-                'type': '로맨틱한 연애 스타일',
-                'description': '사주에 표현력(식상)이 강하여, 로맨틱하고 감성적인 연애를 추구합니다. 예술적 감각과 표현력으로 상대방을 매료시키며, 드라마 같은 연애를 꿈꿉니다.'
-            }
+
+    def _analyze_love_style(self, sipsung_data, day_oheng, gender):
+        """성별과 십성을 고려한 연애 스타일 분석"""
+        sipsungs = list(sipsung_data.values())
+        jaeseong = sipsungs.count('정재') + sipsungs.count('편재')
+        gwanseong = sipsungs.count('정관') + sipsungs.count('편관')
+        siksang = sipsungs.count('식신') + sipsungs.count('상관')
+
+        # 여성: 관성(남자) 유무, 남성: 재성(여자) 유무가 중요
+        target_sipsung = gwanseong if gender == '여자' else jaeseong
+
+        if target_sipsung == 0 and siksang > 2:
+            return {'type': '자유로운 예술가형', 'keyword': '표현과 자유', 'description': '틀에 얽매이지 않고 자유로운 연애를 추구합니다. 자신의 감정과 표현을 중시하며, 친구처럼 편안한 관계를 선호합니다.'}
+        elif target_sipsung > 0 and siksang > 1:
+            return {'type': '적극적인 로맨티스트형', 'keyword': '열정과 표현', 'description': '자신의 매력을 잘 알고 적극적으로 표현합니다. 연애를 주도하며, 드라마틱하고 열정적인 사랑을 만들어갑니다.'}
+        elif target_sipsung > 1 and jaeseong > 1:
+             return {'type': '인기 많은 사교형', 'keyword': '매력과 인기', 'description': '뛰어난 매력과 사교성으로 이성에게 인기가 많습니다. 다양한 만남 속에서 진정한 인연을 찾아나갑니다.'}
+        elif target_sipsung > 0:
+            return {'type': '안정적인 동반자형', 'keyword': '신뢰와 안정', 'description': '연애를 가볍게 생각하지 않으며, 결혼을 전제로 한 진지하고 안정적인 관계를 추구합니다.'}
         else:
-            return {
-                'type': '신중한 연애 스타일',
-                'description': '사주의 연애운이 균형잡혀 있어, 신중하고 안정적인 연애를 추구합니다. 천천히 상대방을 알아가며, 확신이 들 때까지 기다리는 스타일입니다.'
-            }
-    
-    def _analyze_overall_tendency(self, love_style, gwanseong, jaeseong):
-        """전체적 연애 경향 분석"""
-        tendency_map = {
-            '자유로운 연애 스타일': '독립적이고 자유로운 연애관을 가지고 있어, 구속받지 않는 관계를 선호합니다.',
-            '전통적인 연애 스타일': '안정적이고 진지한 연애를 추구하며, 가족의 의견도 중요하게 생각합니다.',
-            '매력적인 연애 스타일': '이성에게 인기가 많고 매력적이지만, 진정한 사랑을 찾는 데 시간이 필요합니다.',
-            '열정적인 연애 스타일': '사랑에 빠지면 온 마음을 다해 사랑하며, 상대방과 깊은 유대감을 형성합니다.',
-            '로맨틱한 연애 스타일': '감성적이고 로맨틱한 분위기를 중시하며, 특별한 추억을 만들어가는 것을 좋아합니다.',
-            '신중한 연애 스타일': '천천히 관계를 발전시키며, 신뢰를 바탕으로 한 안정적인 연애를 추구합니다.'
-        }
+            return {'type': '신중한 탐색가형', 'keyword': '신중과 관찰', 'description': '연애에 신중하며, 상대를 충분히 관찰하고 알아가는 시간이 필요합니다. 한번 마음을 열면 깊은 관계를 맺습니다.'}
+
+    def _analyze_overall_tendency(self, sipsung_data):
+        sipsungs = list(sipsung_data.values())
+        if '상관' in sipsungs and '정관' not in sipsungs:
+            return "기존의 틀을 깨는 혁신적인 연애관을 가지고 있어, 연인에게 새로운 영감을 주지만 때로는 갈등의 원인이 되기도 합니다."
+        if '정인' in sipsungs and '정재' in sipsungs:
+            return "현실과 이상 사이에서 균형을 잘 잡으며, 안정적이면서도 정신적인 교감을 중시하는 성숙한 연애를 합니다."
+        return "상대방과 함께 성장하며, 서로에게 긍정적인 영향을 주는 관계를 만들어나가는 것을 중요하게 생각합니다."
+
+    def _analyze_ideal_partner(self, day_oheng, sipsung_data):
+        birth_oheng = self.OHENG_RELATIONS[day_oheng]['birth']
+        control_oheng = self.OHENG_RELATIONS[day_oheng]['control']
+        partner_desc = f"당신을 성장시키는 '{birth_oheng}'의 기운을 가진 사람, 또는 당신이 조화롭게 이끌 수 있는 '{control_oheng}'의 기운을 가진 사람이 좋은 인연입니다. "
         
-        base_tendency = tendency_map.get(love_style['type'], '자신만의 독특한 연애 스타일을 가지고 있습니다.')
-        
-        # 추가 분석
-        if gwanseong > 1:
-            base_tendency += ' 특히 결혼 운이 강하여 안정적인 가정을 이룰 가능성이 높습니다.'
-        elif jaeseong > 1:
-            base_tendency += ' 이성에게 매력적으로 어필하는 능력이 뛰어납니다.'
-        
-        return base_tendency
-    
-    def _analyze_ideal_partner(self, sipsung_list, day_gan):
-        """이상형 분석"""
-        ideal_traits = []
-        
-        # 십성별 이상형 특징
-        if '정관' in sipsung_list:
-            ideal_traits.append('책임감 있고 든든한 사람')
-        if '편관' in sipsung_list:
-            ideal_traits.append('카리스마 있고 추진력 있는 사람')
-        if '정재' in sipsung_list:
-            ideal_traits.append('경제적으로 안정적인 사람')
-        if '편재' in sipsung_list:
-            ideal_traits.append('사업 수완이 있고 활발한 사람')
-        if '식신' in sipsung_list:
-            ideal_traits.append('유머 감각이 있고 여유로운 사람')
-        if '상관' in sipsung_list:
-            ideal_traits.append('예리하고 지적인 사람')
-        if '정인' in sipsung_list:
-            ideal_traits.append('지적이고 품격 있는 사람')
-        if '편인' in sipsung_list:
-            ideal_traits.append('창의적이고 독특한 사람')
-        
-        if not ideal_traits:
-            ideal_traits.append('성실하고 믿음직한 사람')
-        
-        # 오행별 이상형 추가
-        if day_gan in self.OHENG_GAN:
-            oheng = self.OHENG_GAN[day_gan]
-            oheng_map = {
-                '목': '따뜻하고 포용력 있는',
-                '화': '밝고 열정적인',
-                '토': '안정적이고 신뢰할 수 있는',
-                '금': '원칙적이고 깔끔한',
-                '수': '지혜롭고 유연한'
-            }
-            ideal_traits.insert(0, oheng_map.get(oheng, '조화로운'))
-        
-        return f"당신의 이상형은 {', '.join(ideal_traits[:3])} 사람입니다. 특히 당신의 부족한 부분을 채워주고 함께 성장할 수 있는 동반자가 최고의 인연이 될 것입니다."
-    
-    def _analyze_improvement_points(self, gwanseong, jaeseong, siksang):
-        """연애 개선점 분석"""
-        improvements = []
-        
-        if gwanseong == 0:
-            improvements.append('결혼에 대한 구체적인 계획을 세우는 것이 도움이 됩니다.')
-        if jaeseong == 0:
-            improvements.append('자신의 매력을 개발하고 표현하는 방법을 익히세요.')
-        if siksang == 0:
-            improvements.append('감정 표현을 더 적극적으로 하는 연습이 필요합니다.')
-        
-        if gwanseong > 2:
-            improvements.append('상대방을 너무 구속하지 않도록 주의하세요.')
-        if jaeseong > 2:
-            improvements.append('외모나 조건보다 내면을 보는 안목을 기르세요.')
-        
-        if not improvements:
-            improvements.append('상대방을 이해하려는 노력과 진심을 다한 대화가 중요합니다.')
-        
-        return ' '.join(improvements[:2])
-    
-    def _analyze_love_flow(self, gwanseong, jaeseong):
-        """시기별 애정운 흐름 분석"""
-        if gwanseong > jaeseong:
-            return '20대 후반에서 30대 초반에 결혼 운이 강하게 나타납니다. 이 시기를 놓치지 않는 것이 중요하며, 40대 이후에는 안정적인 부부 관계를 유지할 수 있습니다.'
-        elif jaeseong > gwanseong:
-            return '젊은 시절부터 이성에게 인기가 많지만, 진정한 인연은 30대 중반 이후에 만날 가능성이 높습니다. 다양한 경험을 통해 성숙해진 후 최고의 파트너를 만나게 됩니다.'
+        if '정인' in sipsung_data.values() or '편인' in sipsung_data.values():
+            partner_desc += "지적으로 통하고, 기댈 수 있는 포근한 사람이 이상적입니다."
         else:
-            return '애정운은 인생의 각 시기마다 다른 특성을 보입니다. 20대는 자유로운 연애, 30대는 진지한 만남, 40대 이후는 깊은 신뢰를 바탕으로 한 관계가 중심이 됩니다.'
+            partner_desc += "활동적이고, 함께 즐거운 경험을 만들어갈 수 있는 사람이 잘 맞습니다."
+        return partner_desc
+
+    def _analyze_improvement_points(self, sipsung_data, gender):
+        sipsungs = list(sipsung_data.values())
+        jaeseong = sipsungs.count('정재') + sipsungs.count('편재')
+        gwanseong = sipsungs.count('정관') + sipsungs.count('편관')
+
+        if gender == '여자' and gwanseong == 0:
+            return "인연은 예상치 못한 곳에서 찾아옵니다. 마음을 열고 새로운 만남에 좀 더 적극적으로 나서보세요."
+        if gender == '남자' and jaeseong == 0:
+            return "자신의 매력을 너무 과소평가하지 마세요. 작은 관심 표현이 큰 변화를 가져올 수 있습니다."
+        if '겁재' in sipsungs or '비견' in sipsungs:
+             return "지나친 자존심이나 경쟁심이 연애의 걸림돌이 될 수 있습니다. 때로는 져주는 미덕이 필요합니다."
+        return "자신의 감정을 솔직하게 표현하고, 상대방의 이야기를 경청하는 자세가 관계 발전의 핵심입니다."
+
+    def _analyze_love_flow(self, sipsung_data, gender):
+        # 대운의 흐름과 결합해야 정확하지만, 여기서는 단순화된 분석 제공
+        sipsungs = list(sipsung_data.values())
+        target_sipsung = '관' if gender == '여자' else '재'
+        
+        if f'정{target_sipsung}' in sipsungs or f'편{target_sipsung}' in sipsungs:
+            return f"사주에 이성의 기운({target_sipsung}성)이 뚜렷하여, 인생 전반에 걸쳐 연애의 기회가 꾸준히 찾아옵니다. 20대 후반~30대에 결혼으로 이어질 좋은 인연을 만날 가능성이 높습니다."
+        return "연애운이 특정 시기에 집중되기보다는, 자신의 노력과 준비에 따라 언제든 좋은 인연을 만날 수 있는 사주입니다. 마음의 준비가 되었을 때가 최고의 타이밍입니다."
     
-    def _analyze_timing_location(self, saju_pillars, sipsung_list):
-        """인연의 시기와 장소 분석"""
-        # 계절 분석
-        spring_energy = sipsung_list.count('식신') + sipsung_list.count('상관')
-        summer_energy = sipsung_list.count('정재') + sipsung_list.count('편재')
-        autumn_energy = sipsung_list.count('정관') + sipsung_list.count('편관')
-        winter_energy = sipsung_list.count('정인') + sipsung_list.count('편인')
+    def _analyze_timing_location(self, saju_pillars):
+        month_ji = saju_pillars.get('month', {}).get('ji')
+        seasons = {'인묘진': '봄', '사오미': '여름', '신유술': '가을', '해자축': '겨울'}
+        season = next((s for k, s in seasons.items() if month_ji in k), "계절")
+
+        locations = {'인묘진': '도서관, 공원', '사오미': '공연장, 파티', '신유술': '전시회, 동호회', '해자축': '조용한 카페, 여행지'}
+        location = next((l for k, l in locations.items() if month_ji in k), "일상적인 공간")
         
-        seasons = []
-        if spring_energy > 0:
-            seasons.append('봄')
-        if summer_energy > 0:
-            seasons.append('여름')
-        if autumn_energy > 0:
-            seasons.append('가을')
-        if winter_energy > 0:
-            seasons.append('겨울')
-        
-        if not seasons:
-            seasons = ['봄', '가을']
-        
-        # 장소 분석
-        locations = []
-        if '식신' in sipsung_list:
-            locations.append('맛집이나 카페')
-        if '정인' in sipsung_list or '편인' in sipsung_list:
-            locations.append('도서관이나 문화센터')
-        if '정관' in sipsung_list:
-            locations.append('직장이나 공식적인 모임')
-        if '편재' in sipsung_list:
-            locations.append('사교 모임이나 파티')
-        
-        if not locations:
-            locations.append('일상적인 생활 공간')
-        
-        return f"연애운이 높은 시기는 {', '.join(seasons[:2])}이며, {', '.join(locations[:2])} 같은 곳에서 좋은 인연을 만날 수 있습니다."
-    
-    def _generate_portrait_url(self, love_style):
-        """연애 스타일별 초상화 URL 생성"""
-        portrait_colors = {
-            '자유로운 연애 스타일': 'E3F2FD',   # 연한 파란색
-            '전통적인 연애 스타일': 'F3E5F5',   # 연한 보라색
-            '매력적인 연애 스타일': 'FFE0EC',   # 연한 분홍색
-            '열정적인 연애 스타일': 'FFCDD2',   # 진한 분홍색
-            '로맨틱한 연애 스타일': 'FCE4EC',   # 로즈색
-            '신중한 연애 스타일': 'E8F5E9'      # 연한 초록색
-        }
-        color = portrait_colors.get(love_style, 'FFE0EC')
-        return f'https://via.placeholder.com/300x400/{color}/C2185B?text={love_style}'
-    
+        return f"인연은 특히 '{season}'에 강하게 들어오며, '{location}'과 같은 장소에서 시작될 가능성이 높습니다."
+
+    def _generate_portrait_url(self, style_type):
+        color_map = {'예술가': 'E3F2FD', '로맨티스트': 'FFE0EC', '사교': 'FFCDD2', '동반자': 'E8F5E9', '탐색가': 'F3E5F5'}
+        keyword = style_type.split(' ')[1][:-1]
+        color = next((c for k, c in color_map.items() if k in keyword), 'E0E0E0')
+        return f'https://via.placeholder.com/300x400/{color}/333333?text={keyword}'
+
     def _get_default_analysis(self):
-        """기본 분석 결과"""
+        """기본 분석 결과 반환"""
         return {
             'title': '연애운 & 결혼운 분석',
             'description': '연애운 분석 데이터를 준비 중입니다.',
-            'overall_tendency': '',
-            'ideal_partner': '',
-            'improvement_points': '',
-            'flow_analysis': '',
-            'timing_location': '',
-            'portrait_url': 'https://via.placeholder.com/300x400/FFE0EC/C2185B?text=인연+상대'
+            'overall_tendency': '전체적인 경향을 분석 중입니다.',
+            'ideal_partner': '이상적인 파트너를 분석 중입니다.',
+            'improvement_points': '개선점을 분석 중입니다.',
+            'flow_analysis': '시기별 흐름을 분석 중입니다.',
+            'timing_location': '인연의 시기와 장소를 분석 중입니다.',
+            'portrait_url': 'https://via.placeholder.com/300x400/E0E0E0/333333?text=인연'
         }

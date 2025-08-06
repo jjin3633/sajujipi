@@ -4,81 +4,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>사주피티 - AI 사주팔자 분석</title>
-    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="app-container">
         <div class="container">
-            <!-- 헤더 -->
             <header class="header">
                 <h1>사주피티</h1>
                 <p>AI가 분석하는 당신의 사주팔자</p>
             </header>
 
-            <!-- 메인 컨텐츠 -->
             <main class="main-content">
-                <!-- 입력 폼 -->
                 <section class="section">
                     <form class="birth-input-form" onsubmit="return false;">
-                        <input type="number" id="year" placeholder="년도" min="1900" max="2100" required>
+                        <input type="number" id="year" placeholder="년도 (예: 1990)" min="1900" max="2100" required>
                         <input type="number" id="month" placeholder="월" min="1" max="12" required>
                         <input type="number" id="day" placeholder="일" min="1" max="31" required>
                         <input type="number" id="hour" placeholder="시" min="0" max="23" required>
                         <input type="number" id="minute" placeholder="분" min="0" max="59" required>
-                        <button type="button" id="analyze-btn" class="btn btn-primary btn-large btn-block">
-                            사주 분석하기
-                        </button>
+                        <button type="button" id="analyze-btn" class="btn btn-primary btn-large btn-block">분석하기</button>
                     </form>
-                    
-                    <!-- 상태 메시지 -->
                     <div id="status"></div>
                 </section>
 
-                <!-- 분석 결과 -->
                 <div id="analysis-results">
-                    <!-- 일주 분석 -->
-                    <section id="ilju-analysis" class="analysis-section" style="display: none;"></section>
-                    
-                    <!-- 십성 분석 -->
-                    <section id="sipsung-analysis" class="analysis-section" style="display: none;"></section>
-                    
-                    <!-- 십이운성 분석 -->
-                    <section id="sibiunseong-analysis" class="analysis-section" style="display: none;"></section>
-                    
-                    <!-- 십이신살 분석 -->
-                    <section id="sibisinsal-analysis" class="analysis-section" style="display: none;"></section>
-                    
-                    <!-- 귀인 분석 -->
-                    <section id="guin-analysis" class="analysis-section" style="display: none;"></section>
-                    
-                    <!-- 재물운 분석 -->
-                    <section id="wealth-analysis" class="analysis-section" style="display: none;"></section>
-                    
-                    <!-- 연애운 분석 -->
-                    <section id="love-analysis" class="analysis-section" style="display: none;"></section>
-                    
-                    <!-- 직업운 분석 -->
-                    <section id="career-analysis" class="analysis-section" style="display: none;"></section>
-                    
-                    <!-- 건강운 분석 -->
-                    <section id="health-analysis" class="analysis-section" style="display: none;"></section>
-                    
-                    <!-- 대운 분석 -->
-                    <section id="daeun-analysis" class="analysis-section" style="display: none;"></section>
-                    
-                    <!-- 종합 리포트 -->
-                    <section id="comprehensive-report" class="analysis-section" style="display: none;"></section>
+                    <!-- 스켈레톤 UI (로딩 시 표시) -->
+                    <div id="skeleton-container" style="display: none;">
+                        <div class="skeleton-card">
+                            <div class="skeleton-image"></div>
+                            <div class="skeleton-content">
+                                <div class="skeleton-line title"></div>
+                                <div class="skeleton-line"></div>
+                                <div class="skeleton-line short"></div>
+                            </div>
+                        </div>
+                        <div class="skeleton-card">
+                            <div class="skeleton-content">
+                                <div class="skeleton-line title"></div>
+                                <div class="skeleton-line"></div>
+                                <div class="skeleton-line"></div>
+                                <div class="skeleton-line short"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 실제 분석 결과 섹션 -->
+                    <section id="ilju-analysis" class="analysis-section"></section>
+                    <section id="sipsung-analysis" class="analysis-section"></section>
+                    <section id="sibiunseong-analysis" class="analysis-section"></section>
+                    <section id="sibisinsal-analysis" class="analysis-section"></section>
+                    <section id="guin-analysis" class="analysis-section"></section>
+                    <section id="wealth-analysis" class="analysis-section"></section>
+                    <section id="love-analysis" class="analysis-section"></section>
+                    <section id="career-analysis" class="analysis-section"></section>
+                    <section id="health-analysis" class="analysis-section"></section>
+                    <section id="daeun-analysis" class="analysis-section"></section>
+                    <section id="comprehensive-report" class="analysis-section"></section>
                 </div>
             </main>
         </div>
     </div>
 
-    <!-- 스크롤 표시기 -->
-    <div class="scroll-indicator" id="scroll-top" style="display: none;">
-        <span>↑</span>
-    </div>
-
-    <!-- JavaScript -->
-    <script type="module" src="js/main.js"></script>
+    <div class="scroll-indicator" id="scroll-top" style="display: none;"><span>↑</span></div>
+    <script src="script.js"></script>
 </body>
 </html>

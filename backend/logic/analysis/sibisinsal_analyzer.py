@@ -1,169 +1,125 @@
 # 십이신살 분석 모듈
 class SibisinsalAnalyzer:
     """십이신살 분석을 담당하는 클래스"""
-    
-    # 십이신살 데이터
-    SIBISINSAL_DATA = {
-        "역마살": {"keyword": "이동, 변화, 활동", "description": "활발한 이동과 변화가 많은 운", "effect": "해외 출장이나 이사가 많고, 변화를 즐기는 성향"},
-        "도화살": {"keyword": "매력, 인기, 이성", "description": "이성에게 인기가 많고 매력적인 운", "effect": "대인관계가 원만하고 사교성이 뛰어남"},
-        "화개살": {"keyword": "예술, 종교, 학문", "description": "예술적 재능과 정신적 깊이가 있는 운", "effect": "예술이나 종교, 철학 분야에 재능을 보임"},
-        "천을귀인": {"keyword": "귀인, 도움, 행운", "description": "귀인의 도움을 받는 행운의 운", "effect": "어려울 때마다 도움을 주는 사람이 나타남"},
-        "천의성": {"keyword": "의료, 치유, 봉사", "description": "의료나 치유 분야에 재능이 있는 운", "effect": "의료, 한의학, 상담 분야에 적성을 보임"},
-        "문창귀인": {"keyword": "학문, 문서, 시험", "description": "학업과 시험에서 좋은 성과를 거두는 운", "effect": "학업 성취도가 높고 시험운이 좋음"},
-        "장성살": {"keyword": "군인, 경찰, 무술", "description": "강직하고 용맹한 기질을 나타내는 운", "effect": "정의감이 강하고 보호 본능이 뛰어남"},
-        "괴강살": {"keyword": "고집, 독립, 강직", "description": "독립적이고 강직한 성격을 나타내는 운", "effect": "자기 주관이 뚜렷하고 독립심이 강함"},
-        "백호살": {"keyword": "사고, 주의, 신중", "description": "사고나 부상에 주의가 필요한 운", "effect": "신체적 활동 시 각별한 주의가 필요함"},
-        "육해살": {"keyword": "건강, 주의, 관리", "description": "건강 관리에 특별히 신경써야 하는 운", "effect": "규칙적인 생활과 건강 관리가 중요함"}
+
+    # 삼합(三合)을 기준으로 십이신살을 찾기 위한 테이블
+    SAMHAB_TABLE = {
+        '해묘미': ['겁살-신', '재살-유', '천살-술', '지살-해', '년살-자', '월살-축', '망신살-인', '장성살-묘', '반안살-진', '역마살-사', '육해살-오', '화개살-미'],
+        '인오술': ['겁살-해', '재살-자', '천살-축', '지살-인', '년살-묘', '월살-진', '망신살-사', '장성살-오', '반안살-미', '역마살-신', '육해살-유', '화개살-술'],
+        '사유축': ['겁살-인', '재살-묘', '천살-진', '지살-사', '년살-오', '월살-미', '망신살-신', '장성살-유', '반안살-술', '역마살-해', '육해살-자', '화개살-축'],
+        '신자진': ['겁살-사', '재살-오', '천살-미', '지살-신', '년살-유', '월살-술', '망신살-해', '장성살-자', '반안살-축', '역마살-인', '육해살-묘', '화개살-진']
     }
     
-    # 일지별 신살 계산 테이블 (간략화된 버전)
-    SINSAL_TABLE = {
-        "자": ["역마살", "도화살"],
-        "축": ["천을귀인", "화개살"],
-        "인": ["역마살", "문창귀인"],
-        "묘": ["도화살", "장성살"],
-        "진": ["천의성", "괴강살"],
-        "사": ["역마살", "천을귀인"],
-        "오": ["도화살", "백호살"],
-        "미": ["화개살", "육해살"],
-        "신": ["역마살", "문창귀인"],
-        "유": ["도화살", "천의성"],
-        "술": ["괴강살", "장성살"],
-        "해": ["역마살", "천을귀인"]
+    # 각 신살에 대한 설명
+    SINSAL_DETAILS = {
+        '지살': '변동과 이동의 시작. 새로운 환경에 적응하고 개척하는 능력이 뛰어납니다.',
+        '년살': '매력과 인기의 상징 (도화살). 사람들의 시선을 끌고, 예술적 감각이 뛰어납니다.',
+        '월살': '정체와 고독. 장애물이 많아 답답함을 느낄 수 있지만, 내면 성찰의 기회가 됩니다.',
+        '망신살': '숨겨진 것이 드러남. 실수나 비밀이 탄로 날 수 있으니 언행에 신중해야 합니다.',
+        '장성살': '권력과 리더십. 강한 추진력과 책임감으로 집단을 이끄는 힘이 있습니다.',
+        '반안살': '안정과 성공. 말의 안장에 오른 것처럼 출세와 명예를 얻고 안정된 삶을 누립니다.',
+        '역마살': '끊임없는 이동과 변화. 분주하게 활동하며 해외, 출장, 이사 등과 인연이 깊습니다.',
+        '육해살': '심리적 고통과 장애. 피로가 누적되고 스트레스가 많아 건강 관리가 필수적입니다.',
+        '화개살': '예술과 종교, 학문. 화려함을 덮는다는 의미로, 내면의 깊이가 있고 정신적 세계를 추구합니다.',
+        '겁살': '상실과 빼앗김. 재물, 건강, 인간관계에서 손실을 볼 수 있으니 지키는 것이 중요합니다.',
+        '재살': '수옥살이라고도 하며, 구속과 갈등을 의미합니다. 관재구설이나 시비에 휘말릴 수 있습니다.',
+        '천살': '하늘의 재앙. 예상치 못한 재난이나 불가항력적인 어려움을 겪을 수 있습니다.'
     }
-    
+
     def analyze(self, saju_pillars):
         """십이신살 분석 수행"""
         try:
-            # 십이신살 계산
-            sibisinsal_result = self._calculate_sibisinsal(saju_pillars)
-            
-            # 시기별 영향 분석
-            periods = self._analyze_by_period(sibisinsal_result)
+            sinsal_result = self._calculate_sibisinsal(saju_pillars)
+            periods = self._analyze_by_period(sinsal_result)
             
             return {
                 'title': '십이신살 분석',
-                'content': self._generate_analysis_content(sibisinsal_result),
+                'content': self._generate_analysis_content(sinsal_result),
                 'periods': periods,
-                'sibisinsal_found': sibisinsal_result
+                'sibisinsal_found': sinsal_result
             }
         except Exception as e:
             print(f"십이신살 분석 중 오류: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return self._get_default_analysis()
-    
+
+    def _get_samhab_group(self, jiji):
+        """지지에 해당하는 삼합 그룹 찾기"""
+        for group, members in {'해묘미':['해','묘','미'], '인오술':['인','오','술'], '사유축':['사','유','축'], '신자진':['신','자','진']}.items():
+            if jiji in members:
+                return group
+        return None
+
     def _calculate_sibisinsal(self, saju_pillars):
-        """십이신살 계산"""
+        """연지를 기준으로 십이신살 계산"""
+        year_ji = saju_pillars.get('year', {}).get('ji')
+        if not year_ji:
+            return {}
+
+        samhab_group = self._get_samhab_group(year_ji)
+        if not samhab_group:
+            return {}
+            
         found_sinsal = {}
-        
-        # 각 지지에서 신살 찾기
-        positions = ['year', 'month', 'day', 'hour']
+        sinsal_map = self.SAMHAB_TABLE.get(samhab_group, [])
         position_names = {'year': '연지', 'month': '월지', 'day': '일지', 'hour': '시지'}
-        
-        for pos in positions:
-            jiji = saju_pillars.get(pos, '')[1:2] if len(saju_pillars.get(pos, '')) > 1 else ''
-            if jiji and jiji in self.SINSAL_TABLE:
-                sinsal_list = self.SINSAL_TABLE[jiji]
-                for sinsal in sinsal_list:
+
+        for pos, pos_name in position_names.items():
+            jiji = saju_pillars.get(pos, {}).get('ji')
+            if not jiji:
+                continue
+            
+            for sinsal_info in sinsal_map:
+                sinsal, sinsal_jiji = sinsal_info.split('-')
+                if jiji == sinsal_jiji:
                     if sinsal not in found_sinsal:
                         found_sinsal[sinsal] = []
-                    found_sinsal[sinsal].append(position_names[pos])
+                    if pos_name not in found_sinsal[sinsal]:
+                         found_sinsal[sinsal].append(pos_name)
         
         return found_sinsal
-    
-    def _analyze_by_period(self, sibisinsal_result):
-        """시기별 십이신살 분석"""
+
+    def _analyze_by_period(self, sinsal_result):
+        """시기별 십이신살 영향 분석"""
         periods = []
-        
-        # 초년기 (연지 영향)
-        early_sinsal = self._get_period_sinsal(sibisinsal_result, '연지')
-        early_desc = "당신의 초년기는 " + self._generate_period_description(early_sinsal, '초년기')
-        periods.append({
-            'title': '초년기',
-            'description': early_desc
-        })
-        
-        # 청년기 (월지 영향)
-        youth_sinsal = self._get_period_sinsal(sibisinsal_result, '월지')
-        youth_desc = "당신의 청년기는 " + self._generate_period_description(youth_sinsal, '청년기')
-        periods.append({
-            'title': '청년기',
-            'description': youth_desc
-        })
-        
-        # 중년기 (일지 영향)
-        middle_sinsal = self._get_period_sinsal(sibisinsal_result, '일지')
-        middle_desc = "당신의 중년기는 " + self._generate_period_description(middle_sinsal, '중년기')
-        periods.append({
-            'title': '중년기',
-            'description': middle_desc
-        })
-        
-        # 장년기 (시지 영향)
-        late_sinsal = self._get_period_sinsal(sibisinsal_result, '시지')
-        late_desc = "당신의 장년기는 " + self._generate_period_description(late_sinsal, '장년기')
-        periods.append({
-            'title': '장년기',
-            'description': late_desc
-        })
+        position_map = {'연지': '초년운', '월지': '청년운', '일지': '중년운', '시지': '말년운'}
+
+        for pos_name, period_name in position_map.items():
+            sinsals_in_period = [sinsal for sinsal, positions in sinsal_result.items() if pos_name in positions]
+            
+            description = f"당신의 {period_name}은 "
+            if not sinsals_in_period:
+                description += "특별한 신살의 영향 없이 평탄하게 흘러갑니다."
+            else:
+                sinsal_descs = [f"'{s}'의 영향" for s in sinsals_in_period]
+                description += f"{', '.join(sinsal_descs)}으로 다채로운 경험을 하게 됩니다."
+            
+            periods.append({'title': f'{period_name} ({pos_name})', 'description': description})
         
         return periods
-    
-    def _get_period_sinsal(self, sibisinsal_result, position):
-        """특정 시기의 신살 추출"""
-        period_sinsal = []
-        for sinsal, positions in sibisinsal_result.items():
-            if position in positions:
-                period_sinsal.append(sinsal)
-        return period_sinsal
-    
-    def _generate_period_description(self, sinsal_list, period):
-        """시기별 신살 설명 생성"""
-        if not sinsal_list:
-            return f"{period}에 특별한 신살의 영향이 없어 평탄한 시기를 보낼 것입니다."
+
+    def _generate_analysis_content(self, sinsal_result):
+        """십이신살 종합 분석 내용 생성"""
+        content = "【십이신살 분석】\n\n십이신살은 당신의 인생 각 시기에 나타나는 12가지 주요 기운을 의미합니다.\n\n"
         
-        descriptions = []
-        for sinsal in sinsal_list:
-            if sinsal in self.SIBISINSAL_DATA:
-                data = self.SIBISINSAL_DATA[sinsal]
-                descriptions.append(f"{sinsal}의 영향으로 {data['effect']}")
-        
-        base_desc = {
-            '초년기': "기본적인 인성과 성격이 형성되는 시기입니다. ",
-            '청년기': "사회 진출과 인간관계 형성이 중요한 시기입니다. ",
-            '중년기': "가정과 직장에서의 안정이 중요한 시기입니다. ",
-            '장년기': "인생의 후반부를 준비하는 시기입니다. "
-        }
-        
-        return base_desc.get(period, "") + " ".join(descriptions)
-    
-    def _generate_analysis_content(self, sibisinsal_result):
-        """십이신살 분석 내용 생성"""
-        content = f"【십이신살 분석】{chr(10) * 2}"
-        content += f"십이신살은 당신의 운명에 영향을 미치는 특별한 신살들입니다.{chr(10) * 2}"
-        
-        if sibisinsal_result:
-            content += f"【발견된 신살】{chr(10)}"
-            for sinsal, positions in sibisinsal_result.items():
-                if sinsal in self.SIBISINSAL_DATA:
-                    data = self.SIBISINSAL_DATA[sinsal]
-                    content += f"▣ {sinsal} ({', '.join(positions)}){chr(10)}"
-                    content += f"   • 키워드: {data['keyword']}{chr(10)}"
-                    content += f"   • 설명: {data['description']}{chr(10)}"
-                    content += f"   • 영향: {data['effect']}{chr(10) * 2}"
+        if not sinsal_result:
+            content += "특별히 강하게 작용하는 신살은 없으며, 자신의 의지와 노력으로 운명을 개척해나가는 사주입니다."
         else:
-            content += "특별한 신살이 발견되지 않았습니다. 평탄한 운명을 가지고 있습니다.{chr(10)}"
-        
-        content += f"【신살의 활용법】{chr(10)}"
-        content += f"1. 길신 활용: 좋은 신살의 기운을 최대한 활용하여 성공을 이루세요.{chr(10)}"
-        content += f"2. 흉신 대비: 주의가 필요한 신살은 미리 파악하여 대비하세요.{chr(10)}"
-        content += f"3. 균형 유지: 모든 신살은 양면성이 있으므로 균형잡힌 시각이 중요합니다.{chr(10)}"
-        
+            content += "【당신에게 영향을 주는 주요 신살】\n"
+            for sinsal, positions in sorted(sinsal_result.items()):
+                pos_str = ', '.join(positions)
+                detail = self.SINSAL_DETAILS.get(sinsal, "해당 신살에 대한 정보가 없습니다.")
+                content += f"- {sinsal} ({pos_str}): {detail}\n"
+
+        content += "\n【신살 활용법】\n- 길신(장성살, 반안살 등)은 그 힘을 적극 활용하여 기회로 삼으세요.\n- 흉신(겁살, 재살 등)은 그 의미를 미리 알고 대비하여 피해를 최소화하세요.\n- 모든 신살은 양면성이 있으니, 긍정적인 면을 보고 발전의 계기로 삼는 지혜가 필요합니다."
         return content
-    
+
     def _get_default_analysis(self):
-        """기본 분석 결과"""
+        """기본 분석 결과 반환"""
         return {
             'title': '십이신살 분석',
             'content': '십이신살 분석 데이터를 준비 중입니다.',
-            'periods': []
+            'periods': [],
+            'sibisinsal_found': {}
         }
